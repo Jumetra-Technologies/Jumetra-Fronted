@@ -1,0 +1,10 @@
+{
+  "animations": [
+    {
+      "id": "buzzer-pulse",
+      "type": "pwm",
+      "stateKey": "active",
+      "target": "buzzer-body"
+    }
+  ]
+}

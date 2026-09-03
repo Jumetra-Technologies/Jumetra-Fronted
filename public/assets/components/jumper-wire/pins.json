@@ -1,0 +1,30 @@
+{
+  "pins": [
+    {
+      "id": "A",
+      "name": "End A",
+      "number": "A",
+      "x": 0.15,
+      "y": 0.5,
+      "side": "left",
+      "voltage": 0,
+      "interfaces": [
+        "digital"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "B",
+      "name": "End B",
+      "number": "B",
+      "x": 0.85,
+      "y": 0.5,
+      "side": "right",
+      "voltage": 0,
+      "interfaces": [
+        "digital"
+      ],
+      "signal": "bidirectional"
+    }
+  ]
+}

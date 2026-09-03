@@ -1,0 +1,9 @@
+{
+  "id": "arduino-uno",
+  "name": "Arduino Uno R3",
+  "width": 280,
+  "height": 200,
+  "category": "arduino",
+  "defaultVoltage": 5,
+  "description": "ATmega328P development board"
+}

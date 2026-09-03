@@ -1,0 +1,8 @@
+{
+  "id": "oled",
+  "name": "OLED SSD1306",
+  "width": 120,
+  "height": 70,
+  "category": "displays",
+  "defaultVoltage": 3.3
+}

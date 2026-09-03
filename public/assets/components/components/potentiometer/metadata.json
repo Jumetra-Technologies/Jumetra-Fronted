@@ -1,0 +1,8 @@
+{
+  "id": "potentiometer",
+  "name": "Potentiometer",
+  "width": 70,
+  "height": 80,
+  "category": "sensors",
+  "defaultVoltage": 3.3
+}

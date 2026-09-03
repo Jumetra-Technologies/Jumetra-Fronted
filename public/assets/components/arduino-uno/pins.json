@@ -1,0 +1,295 @@
+{
+  "pins": [
+    {
+      "id": "5V",
+      "name": "5V",
+      "number": "5V",
+      "x": 0.02,
+      "y": 0.15,
+      "side": "left",
+      "voltage": 5,
+      "interfaces": [
+        "power"
+      ],
+      "signal": "power"
+    },
+    {
+      "id": "3V3",
+      "name": "3V3",
+      "number": "3V3",
+      "x": 0.02,
+      "y": 0.25,
+      "side": "left",
+      "voltage": 3.3,
+      "interfaces": [
+        "power"
+      ],
+      "signal": "power"
+    },
+    {
+      "id": "GND1",
+      "name": "GND1",
+      "number": "GND1",
+      "x": 0.02,
+      "y": 0.35,
+      "side": "left",
+      "voltage": 0,
+      "interfaces": [
+        "ground"
+      ],
+      "signal": "power"
+    },
+    {
+      "id": "GND2",
+      "name": "GND2",
+      "number": "GND2",
+      "x": 0.02,
+      "y": 0.45,
+      "side": "left",
+      "voltage": 0,
+      "interfaces": [
+        "ground"
+      ],
+      "signal": "power"
+    },
+    {
+      "id": "A0",
+      "name": "A0",
+      "number": "A0",
+      "x": 0.02,
+      "y": 0.55,
+      "side": "left",
+      "voltage": 5,
+      "interfaces": [
+        "adc",
+        "analog"
+      ],
+      "signal": "input"
+    },
+    {
+      "id": "A1",
+      "name": "A1",
+      "number": "A1",
+      "x": 0.02,
+      "y": 0.65,
+      "side": "left",
+      "voltage": 5,
+      "interfaces": [
+        "adc",
+        "analog"
+      ],
+      "signal": "input"
+    },
+    {
+      "id": "A2",
+      "name": "A2",
+      "number": "A2",
+      "x": 0.02,
+      "y": 0.75,
+      "side": "left",
+      "voltage": 5,
+      "interfaces": [
+        "adc",
+        "analog"
+      ],
+      "signal": "input"
+    },
+    {
+      "id": "A3",
+      "name": "A3",
+      "number": "A3",
+      "x": 0.02,
+      "y": 0.85,
+      "side": "left",
+      "voltage": 5,
+      "interfaces": [
+        "adc",
+        "analog"
+      ],
+      "signal": "input"
+    },
+    {
+      "id": "D13",
+      "name": "D13",
+      "number": 13,
+      "x": 0.98,
+      "y": 0.15,
+      "side": "right",
+      "voltage": 5,
+      "interfaces": [
+        "gpio",
+        "pwm",
+        "spi"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "D12",
+      "name": "D12",
+      "number": 12,
+      "x": 0.98,
+      "y": 0.25,
+      "side": "right",
+      "voltage": 5,
+      "interfaces": [
+        "gpio",
+        "spi"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "D11",
+      "name": "D11",
+      "number": 11,
+      "x": 0.98,
+      "y": 0.35,
+      "side": "right",
+      "voltage": 5,
+      "interfaces": [
+        "gpio",
+        "pwm",
+        "spi"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "D10",
+      "name": "D10",
+      "number": 10,
+      "x": 0.98,
+      "y": 0.45,
+      "side": "right",
+      "voltage": 5,
+      "interfaces": [
+        "gpio",
+        "pwm",
+        "spi"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "D9",
+      "name": "D9",
+      "number": 9,
+      "x": 0.98,
+      "y": 0.55,
+      "side": "right",
+      "voltage": 5,
+      "interfaces": [
+        "gpio",
+        "pwm"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "D8",
+      "name": "D8",
+      "number": 8,
+      "x": 0.98,
+      "y": 0.65,
+      "side": "right",
+      "voltage": 5,
+      "interfaces": [
+        "gpio"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "D7",
+      "name": "D7",
+      "number": 7,
+      "x": 0.98,
+      "y": 0.75,
+      "side": "right",
+      "voltage": 5,
+      "interfaces": [
+        "gpio"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "D6",
+      "name": "D6",
+      "number": 6,
+      "x": 0.98,
+      "y": 0.85,
+      "side": "right",
+      "voltage": 5,
+      "interfaces": [
+        "gpio",
+        "pwm"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "D5",
+      "name": "D5",
+      "number": 5,
+      "x": 0.98,
+      "y": 0.95,
+      "side": "right",
+      "voltage": 5,
+      "interfaces": [
+        "gpio",
+        "pwm"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "SDA",
+      "name": "SDA",
+      "number": "A4",
+      "x": 0.35,
+      "y": 0.98,
+      "side": "bottom",
+      "voltage": 5,
+      "interfaces": [
+        "i2c",
+        "gpio"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "SCL",
+      "name": "SCL",
+      "number": "A5",
+      "x": 0.45,
+      "y": 0.98,
+      "side": "bottom",
+      "voltage": 5,
+      "interfaces": [
+        "i2c",
+        "gpio"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "RX",
+      "name": "RX",
+      "number": 0,
+      "x": 0.55,
+      "y": 0.98,
+      "side": "bottom",
+      "voltage": 5,
+      "interfaces": [
+        "uart",
+        "gpio"
+      ],
+      "signal": "input"
+    },
+    {
+      "id": "TX",
+      "name": "TX",
+      "number": 1,
+      "x": 0.65,
+      "y": 0.98,
+      "side": "bottom",
+      "voltage": 5,
+      "interfaces": [
+        "uart",
+        "gpio"
+      ],
+      "signal": "output"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "animations": [
+    {
+      "id": "dht-read",
+      "type": "text",
+      "stateKey": "temperature_c",
+      "target": "readout"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "animations": [
+    {
+      "id": "btn-press",
+      "type": "switch",
+      "stateKey": "pressed",
+      "target": "button-cap"
+    }
+  ]
+}

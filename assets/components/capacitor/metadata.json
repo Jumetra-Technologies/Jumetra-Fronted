@@ -1,0 +1,8 @@
+{
+  "id": "capacitor",
+  "name": "Capacitor",
+  "width": 50,
+  "height": 60,
+  "category": "passive",
+  "defaultVoltage": 0
+}

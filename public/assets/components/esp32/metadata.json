@@ -1,0 +1,10 @@
+{
+  "id": "esp32",
+  "name": "ESP32 DevKit V1",
+  "width": 300,
+  "height": 150,
+  "category": "esp32",
+  "defaultVoltage": 3.3,
+  "description": "Dual-core WiFi/BT MCU dev board",
+  "firmwareKey": "firmware_version"
+}

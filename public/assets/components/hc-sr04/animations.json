@@ -1,0 +1,10 @@
+{
+  "animations": [
+    {
+      "id": "ultrasonic-pulse",
+      "type": "pulse",
+      "stateKey": "distance_cm",
+      "target": "transducer"
+    }
+  ]
+}

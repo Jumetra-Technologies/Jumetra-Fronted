@@ -1,0 +1,312 @@
+{
+  "pins": [
+    {
+      "id": "3V3",
+      "name": "3V3",
+      "number": "3V3",
+      "x": 0.02,
+      "y": 0.12,
+      "side": "left",
+      "voltage": 3.3,
+      "interfaces": [
+        "power"
+      ],
+      "signal": "power"
+    },
+    {
+      "id": "GND1",
+      "name": "GND1",
+      "number": "GND1",
+      "x": 0.02,
+      "y": 0.22,
+      "side": "left",
+      "voltage": 0,
+      "interfaces": [
+        "ground"
+      ],
+      "signal": "power"
+    },
+    {
+      "id": "EN",
+      "name": "EN",
+      "number": "EN",
+      "x": 0.02,
+      "y": 0.32,
+      "side": "left",
+      "voltage": 3.3,
+      "interfaces": [
+        "digital"
+      ],
+      "signal": "input"
+    },
+    {
+      "id": "VP",
+      "name": "VP",
+      "number": 36,
+      "x": 0.02,
+      "y": 0.42,
+      "side": "left",
+      "voltage": 3.3,
+      "interfaces": [
+        "adc",
+        "analog"
+      ],
+      "signal": "input"
+    },
+    {
+      "id": "VN",
+      "name": "VN",
+      "number": 39,
+      "x": 0.02,
+      "y": 0.52,
+      "side": "left",
+      "voltage": 3.3,
+      "interfaces": [
+        "adc",
+        "analog"
+      ],
+      "signal": "input"
+    },
+    {
+      "id": "D34",
+      "name": "GPIO34",
+      "number": 34,
+      "x": 0.02,
+      "y": 0.62,
+      "side": "left",
+      "voltage": 3.3,
+      "interfaces": [
+        "adc",
+        "gpio"
+      ],
+      "signal": "input"
+    },
+    {
+      "id": "D35",
+      "name": "GPIO35",
+      "number": 35,
+      "x": 0.02,
+      "y": 0.72,
+      "side": "left",
+      "voltage": 3.3,
+      "interfaces": [
+        "adc",
+        "gpio"
+      ],
+      "signal": "input"
+    },
+    {
+      "id": "D32",
+      "name": "GPIO32",
+      "number": 32,
+      "x": 0.02,
+      "y": 0.82,
+      "side": "left",
+      "voltage": 3.3,
+      "interfaces": [
+        "gpio",
+        "adc",
+        "pwm"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "D33",
+      "name": "GPIO33",
+      "number": 33,
+      "x": 0.02,
+      "y": 0.92,
+      "side": "left",
+      "voltage": 3.3,
+      "interfaces": [
+        "gpio",
+        "adc",
+        "pwm"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "D25",
+      "name": "GPIO25",
+      "number": 25,
+      "x": 0.98,
+      "y": 0.12,
+      "side": "right",
+      "voltage": 3.3,
+      "interfaces": [
+        "gpio",
+        "pwm"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "D26",
+      "name": "GPIO26",
+      "number": 26,
+      "x": 0.98,
+      "y": 0.22,
+      "side": "right",
+      "voltage": 3.3,
+      "interfaces": [
+        "gpio",
+        "pwm"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "D27",
+      "name": "GPIO27",
+      "number": 27,
+      "x": 0.98,
+      "y": 0.32,
+      "side": "right",
+      "voltage": 3.3,
+      "interfaces": [
+        "gpio",
+        "pwm"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "D14",
+      "name": "GPIO14",
+      "number": 14,
+      "x": 0.98,
+      "y": 0.42,
+      "side": "right",
+      "voltage": 3.3,
+      "interfaces": [
+        "gpio",
+        "pwm",
+        "spi"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "D12",
+      "name": "GPIO12",
+      "number": 12,
+      "x": 0.98,
+      "y": 0.52,
+      "side": "right",
+      "voltage": 3.3,
+      "interfaces": [
+        "gpio",
+        "pwm"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "GND2",
+      "name": "GND2",
+      "number": "GND2",
+      "x": 0.98,
+      "y": 0.62,
+      "side": "right",
+      "voltage": 0,
+      "interfaces": [
+        "ground"
+      ],
+      "signal": "power"
+    },
+    {
+      "id": "D13",
+      "name": "GPIO13",
+      "number": 13,
+      "x": 0.98,
+      "y": 0.72,
+      "side": "right",
+      "voltage": 3.3,
+      "interfaces": [
+        "gpio",
+        "pwm",
+        "spi"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "D2",
+      "name": "GPIO2",
+      "number": 2,
+      "x": 0.98,
+      "y": 0.82,
+      "side": "right",
+      "voltage": 3.3,
+      "interfaces": [
+        "gpio",
+        "pwm",
+        "i2c"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "D4",
+      "name": "GPIO4",
+      "number": 4,
+      "x": 0.98,
+      "y": 0.92,
+      "side": "right",
+      "voltage": 3.3,
+      "interfaces": [
+        "gpio",
+        "pwm",
+        "i2c"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "RX",
+      "name": "RX0",
+      "number": 3,
+      "x": 0.5,
+      "y": 0.98,
+      "side": "bottom",
+      "voltage": 3.3,
+      "interfaces": [
+        "uart",
+        "gpio"
+      ],
+      "signal": "input"
+    },
+    {
+      "id": "TX",
+      "name": "TX0",
+      "number": 1,
+      "x": 0.62,
+      "y": 0.98,
+      "side": "bottom",
+      "voltage": 3.3,
+      "interfaces": [
+        "uart",
+        "gpio"
+      ],
+      "signal": "output"
+    },
+    {
+      "id": "5V",
+      "name": "5V",
+      "number": "5V",
+      "x": 0.38,
+      "y": 0.98,
+      "side": "bottom",
+      "voltage": 5,
+      "interfaces": [
+        "power"
+      ],
+      "signal": "power"
+    },
+    {
+      "id": "VIN",
+      "name": "VIN",
+      "number": "VIN",
+      "x": 0.26,
+      "y": 0.98,
+      "side": "bottom",
+      "voltage": 5,
+      "interfaces": [
+        "power"
+      ],
+      "signal": "power"
+    }
+  ]
+}

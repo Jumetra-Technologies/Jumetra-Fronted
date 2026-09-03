@@ -1,0 +1,30 @@
+{
+  "pins": [
+    {
+      "id": "+",
+      "name": "Positive",
+      "number": "+",
+      "x": 0.35,
+      "y": 0.92,
+      "side": "bottom",
+      "voltage": 0,
+      "interfaces": [
+        "analog"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "-",
+      "name": "Negative",
+      "number": "-",
+      "x": 0.65,
+      "y": 0.92,
+      "side": "bottom",
+      "voltage": 0,
+      "interfaces": [
+        "analog"
+      ],
+      "signal": "bidirectional"
+    }
+  ]
+}

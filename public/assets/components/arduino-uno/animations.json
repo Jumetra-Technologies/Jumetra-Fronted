@@ -1,0 +1,11 @@
+{
+  "animations": [
+    {
+      "id": "built-in-led",
+      "type": "glow",
+      "pinRef": "D13",
+      "stateKey": "led_on",
+      "target": "onboard-led"
+    }
+  ]
+}

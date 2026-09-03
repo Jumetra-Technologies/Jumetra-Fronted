@@ -1,0 +1,156 @@
+@import "tailwindcss";
+
+/* HHIP Design System — light-first engineering platform */
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --surface: #ffffff;
+  --canvas: #f1f5f9;
+  --sidebar: #111827;
+  --sidebar-foreground: #f9fafb;
+  --sidebar-muted: #9ca3af;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --success: #10b981;
+  --success-foreground: #064e3b;
+  --warning: #f59e0b;
+  --warning-foreground: #78350f;
+  --danger: #ef4444;
+  --danger-foreground: #7f1d1d;
+  --border: #e5e7eb;
+  --muted: #64748b;
+  --muted-bg: #f1f5f9;
+  --accent: #eff6ff;
+  --ring: #2563eb;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+  --radius: 12px;
+  --radius-sm: 10px;
+}
+
+.dark {
+  --background: #0b1220;
+  --foreground: #f8fafc;
+  --surface: #111827;
+  --canvas: #0f172a;
+  --sidebar: #030712;
+  --sidebar-foreground: #f9fafb;
+  --sidebar-muted: #9ca3af;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --success: #34d399;
+  --success-foreground: #ecfdf5;
+  --warning: #fbbf24;
+  --warning-foreground: #422006;
+  --danger: #f87171;
+  --danger-foreground: #fef2f2;
+  --border: #1f2937;
+  --muted: #94a3b8;
+  --muted-bg: #1e293b;
+  --accent: #1e3a5f;
+  --ring: #60a5fa;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-canvas: var(--canvas);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-muted-bg: var(--muted-bg);
+  --color-accent: var(--accent);
+  --color-ring: var(--ring);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains);
+  --radius-lg: var(--radius);
+  --radius-md: var(--radius-sm);
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+code,
+.font-mono,
+pre {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+}
+
+/* Focus rings — WCAG keyboard accessibility */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Engineering canvas grid helper */
+.hhip-canvas-grid {
+  background-color: var(--canvas);
+  background-image:
+    linear-gradient(to right, rgba(148, 163, 184, 0.18) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.18) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+.dark .hhip-canvas-grid {
+  background-image:
+    linear-gradient(to right, rgba(71, 85, 105, 0.35) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(71, 85, 105, 0.35) 1px, transparent 1px);
+}
+
+/* React Flow theme overrides */
+.react-flow__controls {
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-sm) !important;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.react-flow__controls-button {
+  background: var(--surface) !important;
+  border-bottom: 1px solid var(--border) !important;
+  fill: var(--foreground) !important;
+}
+
+.react-flow__minimap {
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-sm) !important;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* Scrollbars */
+.hhip-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.hhip-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 8px;
+}
+.dark .hhip-scroll::-webkit-scrollbar-thumb {
+  background: #334155;
+}

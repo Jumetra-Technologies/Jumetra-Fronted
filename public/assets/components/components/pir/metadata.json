@@ -1,0 +1,8 @@
+{
+  "id": "pir",
+  "name": "PIR Sensor",
+  "width": 80,
+  "height": 100,
+  "category": "sensors",
+  "defaultVoltage": 5
+}

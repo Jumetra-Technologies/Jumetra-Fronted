@@ -1,0 +1,9 @@
+{
+  "id": "breadboard",
+  "name": "Breadboard",
+  "width": 400,
+  "height": 280,
+  "category": "prototyping",
+  "defaultVoltage": 5,
+  "description": "830-point solderless breadboard"
+}

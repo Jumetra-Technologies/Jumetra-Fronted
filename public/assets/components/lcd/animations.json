@@ -1,0 +1,10 @@
+{
+  "animations": [
+    {
+      "id": "lcd-text",
+      "type": "text",
+      "stateKey": "display_text",
+      "target": "lcd-screen"
+    }
+  ]
+}

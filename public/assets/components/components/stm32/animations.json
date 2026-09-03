@@ -1,0 +1,10 @@
+{
+  "animations": [
+    {
+      "id": "power-led",
+      "type": "glow",
+      "stateKey": "power_on",
+      "target": "power-led"
+    }
+  ]
+}

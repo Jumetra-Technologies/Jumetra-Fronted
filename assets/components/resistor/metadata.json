@@ -1,0 +1,8 @@
+{
+  "id": "resistor",
+  "name": "Resistor",
+  "width": 80,
+  "height": 30,
+  "category": "passive",
+  "defaultVoltage": 0
+}

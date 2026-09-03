@@ -1,0 +1,31 @@
+{
+  "pins": [
+    {
+      "id": "A",
+      "name": "Anode",
+      "number": "A",
+      "x": 0.5,
+      "y": 0.08,
+      "side": "top",
+      "voltage": 3.3,
+      "interfaces": [
+        "digital",
+        "pwm"
+      ],
+      "signal": "input"
+    },
+    {
+      "id": "C",
+      "name": "Cathode",
+      "number": "C",
+      "x": 0.5,
+      "y": 0.92,
+      "side": "bottom",
+      "voltage": 0,
+      "interfaces": [
+        "ground"
+      ],
+      "signal": "power"
+    }
+  ]
+}

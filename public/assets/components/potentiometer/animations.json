@@ -1,0 +1,12 @@
+{
+  "animations": [
+    {
+      "id": "pot-rotate",
+      "type": "rotate",
+      "stateKey": "value",
+      "target": "knob",
+      "min": 0,
+      "max": 1023
+    }
+  ]
+}

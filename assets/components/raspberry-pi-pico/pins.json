@@ -1,0 +1,195 @@
+{
+  "pins": [
+    {
+      "id": "GND1",
+      "name": "GND1",
+      "number": "GND1",
+      "x": 0.02,
+      "y": 0.15,
+      "side": "left",
+      "voltage": 0,
+      "interfaces": [
+        "ground"
+      ],
+      "signal": "power"
+    },
+    {
+      "id": "GP0",
+      "name": "GP0",
+      "number": 0,
+      "x": 0.02,
+      "y": 0.3,
+      "side": "left",
+      "voltage": 3.3,
+      "interfaces": [
+        "gpio",
+        "uart"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "GP1",
+      "name": "GP1",
+      "number": 1,
+      "x": 0.02,
+      "y": 0.45,
+      "side": "left",
+      "voltage": 3.3,
+      "interfaces": [
+        "gpio",
+        "uart"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "GND2",
+      "name": "GND2",
+      "number": "GND2",
+      "x": 0.02,
+      "y": 0.6,
+      "side": "left",
+      "voltage": 0,
+      "interfaces": [
+        "ground"
+      ],
+      "signal": "power"
+    },
+    {
+      "id": "GP2",
+      "name": "GP2",
+      "number": 2,
+      "x": 0.02,
+      "y": 0.75,
+      "side": "left",
+      "voltage": 3.3,
+      "interfaces": [
+        "gpio",
+        "i2c"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "GP3",
+      "name": "GP3",
+      "number": 3,
+      "x": 0.02,
+      "y": 0.9,
+      "side": "left",
+      "voltage": 3.3,
+      "interfaces": [
+        "gpio",
+        "i2c"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "GP4",
+      "name": "GP4",
+      "number": 4,
+      "x": 0.98,
+      "y": 0.15,
+      "side": "right",
+      "voltage": 3.3,
+      "interfaces": [
+        "gpio",
+        "spi"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "GP5",
+      "name": "GP5",
+      "number": 5,
+      "x": 0.98,
+      "y": 0.3,
+      "side": "right",
+      "voltage": 3.3,
+      "interfaces": [
+        "gpio",
+        "spi"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "GND3",
+      "name": "GND3",
+      "number": "GND3",
+      "x": 0.98,
+      "y": 0.45,
+      "side": "right",
+      "voltage": 0,
+      "interfaces": [
+        "ground"
+      ],
+      "signal": "power"
+    },
+    {
+      "id": "GP6",
+      "name": "GP6",
+      "number": 6,
+      "x": 0.98,
+      "y": 0.6,
+      "side": "right",
+      "voltage": 3.3,
+      "interfaces": [
+        "gpio",
+        "spi"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "GP7",
+      "name": "GP7",
+      "number": 7,
+      "x": 0.98,
+      "y": 0.75,
+      "side": "right",
+      "voltage": 3.3,
+      "interfaces": [
+        "gpio",
+        "spi"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "GP8",
+      "name": "GP8",
+      "number": 8,
+      "x": 0.98,
+      "y": 0.9,
+      "side": "right",
+      "voltage": 3.3,
+      "interfaces": [
+        "gpio",
+        "pwm"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "3V3",
+      "name": "3V3",
+      "number": "3V3",
+      "x": 0.4,
+      "y": 0.98,
+      "side": "bottom",
+      "voltage": 3.3,
+      "interfaces": [
+        "power"
+      ],
+      "signal": "power"
+    },
+    {
+      "id": "VBUS",
+      "name": "VBUS",
+      "number": "VBUS",
+      "x": 0.55,
+      "y": 0.98,
+      "side": "bottom",
+      "voltage": 5,
+      "interfaces": [
+        "power"
+      ],
+      "signal": "power"
+    }
+  ]
+}

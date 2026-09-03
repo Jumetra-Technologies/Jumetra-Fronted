@@ -1,0 +1,10 @@
+{
+  "animations": [
+    {
+      "id": "led-glow",
+      "type": "glow",
+      "stateKey": "on",
+      "target": "led-body"
+    }
+  ]
+}

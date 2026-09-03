@@ -1,0 +1,9 @@
+{
+  "id": "stm32",
+  "name": "STM32 Blue Pill",
+  "width": 220,
+  "height": 120,
+  "category": "stm32",
+  "defaultVoltage": 3.3,
+  "description": "STM32F103C8T6 minimal dev board"
+}

@@ -1,0 +1,10 @@
+{
+  "animations": [
+    {
+      "id": "pir-detect",
+      "type": "glow",
+      "stateKey": "motion",
+      "target": "dome"
+    }
+  ]
+}

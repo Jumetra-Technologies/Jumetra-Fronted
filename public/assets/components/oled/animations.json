@@ -1,0 +1,10 @@
+{
+  "animations": [
+    {
+      "id": "oled-text",
+      "type": "text",
+      "stateKey": "display_text",
+      "target": "oled-screen"
+    }
+  ]
+}

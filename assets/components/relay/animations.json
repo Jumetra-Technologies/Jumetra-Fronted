@@ -1,0 +1,10 @@
+{
+  "animations": [
+    {
+      "id": "relay-switch",
+      "type": "switch",
+      "stateKey": "active",
+      "target": "relay-arm"
+    }
+  ]
+}

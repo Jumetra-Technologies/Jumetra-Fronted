@@ -1,0 +1,82 @@
+{
+  "pins": [
+    {
+      "id": "VCC",
+      "name": "VCC",
+      "number": "VCC",
+      "x": 0.15,
+      "y": 0.08,
+      "side": "top",
+      "voltage": 5,
+      "interfaces": [
+        "power"
+      ],
+      "signal": "power"
+    },
+    {
+      "id": "GND",
+      "name": "GND",
+      "number": "GND",
+      "x": 0.85,
+      "y": 0.08,
+      "side": "top",
+      "voltage": 0,
+      "interfaces": [
+        "ground"
+      ],
+      "signal": "power"
+    },
+    {
+      "id": "IN",
+      "name": "IN",
+      "number": "IN",
+      "x": 0.5,
+      "y": 0.08,
+      "side": "top",
+      "voltage": 5,
+      "interfaces": [
+        "digital"
+      ],
+      "signal": "input"
+    },
+    {
+      "id": "NO",
+      "name": "NO",
+      "number": "NO",
+      "x": 0.25,
+      "y": 0.92,
+      "side": "bottom",
+      "voltage": 5,
+      "interfaces": [
+        "digital"
+      ],
+      "signal": "output"
+    },
+    {
+      "id": "COM",
+      "name": "COM",
+      "number": "COM",
+      "x": 0.5,
+      "y": 0.92,
+      "side": "bottom",
+      "voltage": 5,
+      "interfaces": [
+        "digital"
+      ],
+      "signal": "bidirectional"
+    },
+    {
+      "id": "NC",
+      "name": "NC",
+      "number": "NC",
+      "x": 0.75,
+      "y": 0.92,
+      "side": "bottom",
+      "voltage": 5,
+      "interfaces": [
+        "digital"
+      ],
+      "signal": "output"
+    }
+  ]
+}
