@@ -24,12 +24,24 @@ import type {
   SimulationState,
   SimulationStepResult,
 } from "./types";
+import type { WorkspaceNode, WorkspaceState } from "./workspace-types";
+import { coerceWorkspaceState } from "./workspace-snapshot";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 
+function buildQuery(params: Record<string, string | number | undefined | null>): string {
+  const qs = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value == null || value === "") continue;
+    qs.set(key, String(value));
+  }
+  const query = qs.toString();
+  return query ? `?${query}` : "";
+}
+
 async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
   const headers: HeadersInit = {
-    "Content-Type": "application/json",
+    ...(init?.method && init.method !== "GET" ? { "Content-Type": "application/json" } : {}),
     ...(init?.headers ?? {}),
   };
   const fetchInit: RequestInit = { ...init, headers };
@@ -52,6 +64,32 @@ async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error(`API ${path} failed: ${res.status}`);
   }
   return res.json() as Promise<T>;
+}
+
+async function fetchWorkspaceState(path: string, init?: RequestInit): Promise<WorkspaceState> {
+  const raw = await fetchJson<unknown>(path, init);
+  return coerceWorkspaceState(raw);
+}
+
+function coerceWorkspaceNode(raw: unknown): WorkspaceNode {
+  const n = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const position = (n.position && typeof n.position === "object" ? n.position : {}) as {
+    x?: number;
+    y?: number;
+  };
+  return {
+    id: String(n.id ?? ""),
+    component_id: String(n.component_id ?? ""),
+    label: String(n.label ?? n.component_id ?? ""),
+    category: String(n.category ?? ""),
+    position: { x: Number(position.x ?? 0), y: Number(position.y ?? 0) },
+    device_mode: (n.device_mode as WorkspaceNode["device_mode"]) || "virtual",
+    pin_map: (n.pin_map as Record<string, string>) || {},
+    properties: (n.properties as Record<string, unknown>) || {},
+    live_state: (n.live_state as Record<string, unknown>) || {},
+    available: n.available !== false,
+    type: n.type ? String(n.type) : undefined,
+  };
 }
 
 export const api = {
@@ -86,16 +124,16 @@ export const api = {
     interface?: string;
     controller_id?: string;
     limit?: number;
-  }) => {
-    const qs = new URLSearchParams();
-    if (params.q) qs.set("q", params.q);
-    if (params.category) qs.set("category", params.category);
-    if (params.interface) qs.set("interface", params.interface);
-    if (params.controller_id) qs.set("controller_id", params.controller_id);
-    if (params.limit != null) qs.set("limit", String(params.limit));
-    const query = qs.toString();
-    return fetchJson<ComponentSearchHit[]>(`/components/search${query ? `?${query}` : ""}`);
-  },
+  }) =>
+    fetchJson<ComponentSearchHit[]>(
+      `/components/search${buildQuery({
+        q: params.q,
+        category: params.category,
+        interface: params.interface,
+        controller_id: params.controller_id,
+        limit: params.limit,
+      })}`,
+    ),
   debugComponents: () =>
     fetchJson<{
       total_components: number;
@@ -104,17 +142,15 @@ export const api = {
       components_dir?: string;
       json_catalog_count?: number;
     }>("/components/debug"),
-  searchComponentsV2: (params: { q?: string; category?: string; interface?: string; limit?: number }) => {
-    const qs = new URLSearchParams();
-    if (params.q) qs.set("q", params.q);
-    if (params.category) qs.set("category", params.category);
-    if (params.interface) qs.set("interface", params.interface);
-    if (params.limit != null) qs.set("limit", String(params.limit));
-    const query = qs.toString();
-    return fetchJson<{ results: ComponentV2SearchHit[]; total: number }>(
-      `/components/v2/search${query ? `?${query}` : ""}`,
-    );
-  },
+  searchComponentsV2: (params: { q?: string; category?: string; interface?: string; limit?: number }) =>
+    fetchJson<{ results: ComponentV2SearchHit[]; total: number }>(
+      `/components/v2/search${buildQuery({
+        q: params.q,
+        category: params.category,
+        interface: params.interface,
+        limit: params.limit,
+      })}`,
+    ),
   getComponentV2: (id: string) => fetchJson<ComponentV2Detail>(`/components/v2/${id}`),
   getComponentV2RendererUrl: (id: string) => `${API_BASE}/components/v2/${id}/renderer.svg`,
   debugComponentsV2: () =>
@@ -259,7 +295,6 @@ export const api = {
       method: "POST",
       body: JSON.stringify(body),
     }),
-  // Sprint 26 — Engineering Workspace
   getWorkspaceCatalog: (params?: {
     q?: string;
     category?: string;
@@ -268,44 +303,40 @@ export const api = {
     voltage?: string | number;
     voltages?: string;
     controller_id?: string;
-  }) => {
-    const qs = new URLSearchParams();
-    if (params?.q) qs.set("q", params.q);
-    if (params?.category) qs.set("category", params.category);
-    if (params?.interface) qs.set("interface", params.interface);
-    if (params?.interfaces) qs.set("interfaces", params.interfaces);
-    if (params?.voltage != null) qs.set("voltage", String(params.voltage));
-    if (params?.voltages) qs.set("voltages", params.voltages);
-    if (params?.controller_id) qs.set("controller_id", params.controller_id);
-    const query = qs.toString();
-    return fetchJson<{ categories: string[]; items: Array<Record<string, unknown>> }>(
-      `/engineering/workspace/catalog${query ? `?${query}` : ""}`,
-    );
-  },
+  }) =>
+    fetchJson<{ categories: string[]; items: Array<Record<string, unknown>> }>(
+      `/engineering/workspace/catalog${buildQuery({
+        q: params?.q,
+        category: params?.category,
+        interface: params?.interface,
+        interfaces: params?.interfaces,
+        voltage: params?.voltage,
+        voltages: params?.voltages,
+        controller_id: params?.controller_id,
+      })}`,
+    ),
   createEngineeringWorkspace: (body: { name: string; project_id?: string }) =>
     fetchJson<{ workspace_id: string; name: string; status: string }>("/engineering/workspace", {
       method: "POST",
       body: JSON.stringify(body),
     }),
   getEngineeringWorkspaceState: (id: string) =>
-    fetchJson<Record<string, unknown>>(`/engineering/workspace/${id}/state`),
+    fetchWorkspaceState(`/engineering/workspace/${id}/state`),
   connectEngineeringWorkspace: (id: string) =>
-    fetchJson<Record<string, unknown>>(`/engineering/workspace/${id}/connect`, { method: "POST" }),
+    fetchWorkspaceState(`/engineering/workspace/${id}/connect`, { method: "POST" }),
   disconnectEngineeringWorkspace: (id: string) =>
-    fetchJson<Record<string, unknown>>(`/engineering/workspace/${id}/disconnect`, {
-      method: "POST",
-    }),
+    fetchWorkspaceState(`/engineering/workspace/${id}/disconnect`, { method: "POST" }),
   runEngineeringWorkspace: (id: string, speed = "1x") =>
-    fetchJson<Record<string, unknown>>(`/engineering/workspace/${id}/run`, {
+    fetchWorkspaceState(`/engineering/workspace/${id}/run`, {
       method: "POST",
       body: JSON.stringify({ speed }),
     }),
   pauseEngineeringWorkspace: (id: string) =>
-    fetchJson<Record<string, unknown>>(`/engineering/workspace/${id}/pause`, { method: "POST" }),
+    fetchWorkspaceState(`/engineering/workspace/${id}/pause`, { method: "POST" }),
   resetEngineeringWorkspace: (id: string) =>
-    fetchJson<Record<string, unknown>>(`/engineering/workspace/${id}/reset`, { method: "POST" }),
+    fetchWorkspaceState(`/engineering/workspace/${id}/reset`, { method: "POST" }),
   stepEngineeringWorkspace: (id: string, deltaMs = 100) =>
-    fetchJson<Record<string, unknown>>(`/engineering/workspace/${id}/step`, {
+    fetchWorkspaceState(`/engineering/workspace/${id}/step`, {
       method: "POST",
       body: JSON.stringify({ delta_ms: deltaMs }),
     }),
@@ -321,25 +352,29 @@ export const api = {
       label?: string;
     },
   ) =>
-    fetchJson<Record<string, unknown>>(`/engineering/workspace/${id}/nodes`, {
+    fetchJson<unknown>(`/engineering/workspace/${id}/nodes`, {
       method: "POST",
       body: JSON.stringify(body),
-    }),
+    }).then(coerceWorkspaceNode),
   updateWorkspaceNode: (id: string, nodeId: string, patch: Record<string, unknown>) =>
-    fetchJson<Record<string, unknown>>(`/engineering/workspace/${id}/nodes/${nodeId}`, {
+    fetchJson<unknown>(`/engineering/workspace/${id}/nodes/${nodeId}`, {
       method: "PATCH",
       body: JSON.stringify(patch),
-    }),
-  deleteWorkspaceNodes: (id: string, ids: string[]) =>
-    fetchJson<Record<string, unknown>>(`/engineering/workspace/${id}/nodes/delete`, {
+    }).then(coerceWorkspaceNode),
+  deleteWorkspaceNodes: async (id: string, ids: string[]) => {
+    await fetchJson<unknown>(`/engineering/workspace/${id}/nodes/delete`, {
       method: "POST",
       body: JSON.stringify({ ids }),
-    }),
-  duplicateWorkspaceNodes: (id: string, ids: string[]) =>
-    fetchJson<Array<Record<string, unknown>>>(`/engineering/workspace/${id}/nodes/duplicate`, {
+    });
+    return fetchWorkspaceState(`/engineering/workspace/${id}/state`);
+  },
+  duplicateWorkspaceNodes: async (id: string, ids: string[]) => {
+    const nodes = await fetchJson<unknown[]>(`/engineering/workspace/${id}/nodes/duplicate`, {
       method: "POST",
       body: JSON.stringify({ ids }),
-    }),
+    });
+    return nodes.map(coerceWorkspaceNode);
+  },
   addWorkspaceWire: (
     id: string,
     body: {
@@ -355,15 +390,17 @@ export const api = {
       method: "POST",
       body: JSON.stringify(body),
     }),
-  deleteWorkspaceWires: (id: string, ids: string[]) =>
-    fetchJson<Record<string, unknown>>(`/engineering/workspace/${id}/wires/delete`, {
+  deleteWorkspaceWires: async (id: string, ids: string[]) => {
+    await fetchJson<unknown>(`/engineering/workspace/${id}/wires/delete`, {
       method: "POST",
       body: JSON.stringify({ ids }),
-    }),
+    });
+    return fetchWorkspaceState(`/engineering/workspace/${id}/state`);
+  },
   undoWorkspace: (id: string) =>
-    fetchJson<Record<string, unknown>>(`/engineering/workspace/${id}/undo`, { method: "POST" }),
+    fetchWorkspaceState(`/engineering/workspace/${id}/undo`, { method: "POST" }),
   redoWorkspace: (id: string) =>
-    fetchJson<Record<string, unknown>>(`/engineering/workspace/${id}/redo`, { method: "POST" }),
+    fetchWorkspaceState(`/engineering/workspace/${id}/redo`, { method: "POST" }),
   sendWorkspaceSerial: (id: string, line: string) =>
     fetchJson<Record<string, unknown>>(`/engineering/workspace/${id}/serial`, {
       method: "POST",
@@ -380,13 +417,10 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ port, firmware_path: firmwarePath }),
     }),
-  // Sprint 29 — live hybrid workspace hardware nodes
-  listWorkspaceHardware: (workspaceId = "") => {
-    const qs = workspaceId ? `?workspace_id=${encodeURIComponent(workspaceId)}` : "";
-    return fetchJson<{ hardware: Array<Record<string, unknown>>; count: number }>(
-      `/workspace/hardware${qs}`,
-    );
-  },
+  listWorkspaceHardware: (workspaceId = "") =>
+    fetchJson<{ hardware: Array<Record<string, unknown>>; count: number }>(
+      `/workspace/hardware${buildQuery({ workspace_id: workspaceId || undefined })}`,
+    ),
   getWorkspaceHardware: (deviceId: string) =>
     fetchJson<Record<string, unknown>>(`/workspace/hardware/${encodeURIComponent(deviceId)}`),
   reconnectWorkspaceHardware: (body: { device_id?: string; project_id?: string }) =>
@@ -401,15 +435,12 @@ export const api = {
     }),
   listWorkspaceHardwareEvents: (limit = 100) =>
     fetchJson<{ events: Array<Record<string, unknown>>; count: number }>(
-      `/workspace/hardware/events?limit=${limit}`,
+      `/workspace/hardware/events${buildQuery({ limit })}`,
     ),
-  // Sprint 30 — interactive hybrid wiring
-  listWorkspaceConnections: (workspaceId = "") => {
-    const qs = workspaceId ? `?workspace_id=${encodeURIComponent(workspaceId)}` : "";
-    return fetchJson<{ connections: Array<Record<string, unknown>>; count: number }>(
-      `/workspace/connections${qs}`,
-    );
-  },
+  listWorkspaceConnections: (workspaceId = "") =>
+    fetchJson<{ connections: Array<Record<string, unknown>>; count: number }>(
+      `/workspace/connections${buildQuery({ workspace_id: workspaceId || undefined })}`,
+    ),
   getWorkspaceConnection: (id: string) =>
     fetchJson<Record<string, unknown>>(`/workspace/connections/${encodeURIComponent(id)}`),
   createWorkspaceConnection: (body: Record<string, unknown>) =>
@@ -437,7 +468,7 @@ export const api = {
     end_device: string;
     end_pin: string;
   }) =>
-    fetchJson<Record<string, unknown>>("/workspace/connections/highlight", {
+    fetchJson<{ path?: string[] } & Record<string, unknown>>("/workspace/connections/highlight", {
       method: "POST",
       body: JSON.stringify(body),
     }),
@@ -461,7 +492,6 @@ export const api = {
     fetchJson<Record<string, unknown>>(
       `/workspace/connections/pin/${encodeURIComponent(deviceId)}/${encodeURIComponent(pin)}`,
     ),
-  // Sprint 31 — Embedded Development Studio
   listFirmwareProjects: () =>
     fetchJson<{ projects: Array<Record<string, unknown>>; count: number }>("/firmware/projects"),
   createFirmwareProject: (body: Record<string, unknown>) =>
@@ -495,14 +525,13 @@ export const api = {
       body: JSON.stringify(body),
     }),
   getFirmwareLogs: (limit = 200) =>
-    fetchJson<{ logs: Array<Record<string, unknown>>; count: number }>(`/firmware/logs?limit=${limit}`),
-  getFirmwareSerial: (params?: { limit?: number; query?: string }) => {
-    const qs = new URLSearchParams();
-    if (params?.limit) qs.set("limit", String(params.limit));
-    if (params?.query) qs.set("query", params.query);
-    const q = qs.toString();
-    return fetchJson<Record<string, unknown>>(`/firmware/serial${q ? `?${q}` : ""}`);
-  },
+    fetchJson<{ logs: Array<Record<string, unknown>>; count: number }>(
+      `/firmware/logs${buildQuery({ limit })}`,
+    ),
+  getFirmwareSerial: (params?: { limit?: number; query?: string }) =>
+    fetchJson<Record<string, unknown>>(
+      `/firmware/serial${buildQuery({ limit: params?.limit, query: params?.query })}`,
+    ),
   postFirmwareSerial: (body: Record<string, unknown>) =>
     fetchJson<Record<string, unknown>>("/firmware/serial", {
       method: "POST",
@@ -510,34 +539,37 @@ export const api = {
     }),
 };
 
+function wsBase(): string {
+  return process.env.NEXT_PUBLIC_WS_URL ?? API_BASE.replace(/^http/, "ws");
+}
+
+export function wsUrl(path: string): string {
+  const suffix = path.startsWith("/") ? path : `/${path}`;
+  return `${wsBase()}${suffix}`;
+}
+
 export function getWsUrl(): string {
-  const base = process.env.NEXT_PUBLIC_WS_URL ?? API_BASE.replace(/^http/, "ws");
-  return `${base}/ws/events`;
+  return wsUrl("/ws/events");
 }
 
 export function getWorkspaceWsUrl(workspaceId: string): string {
-  const base = process.env.NEXT_PUBLIC_WS_URL ?? API_BASE.replace(/^http/, "ws");
-  return `${base}/ws/workspace/${workspaceId}`;
+  return wsUrl(`/ws/workspace/${workspaceId}`);
 }
 
 export function getDiscoveryWsUrl(): string {
-  const base = process.env.NEXT_PUBLIC_WS_URL ?? API_BASE.replace(/^http/, "ws");
-  return `${base}/ws/discovery`;
+  return wsUrl("/ws/discovery");
 }
 
 export function getHardwareWsUrl(): string {
-  const base = process.env.NEXT_PUBLIC_WS_URL ?? API_BASE.replace(/^http/, "ws");
-  return `${base}/ws/hardware`;
+  return wsUrl("/ws/hardware");
 }
 
 export function getWiringWsUrl(): string {
-  const base = process.env.NEXT_PUBLIC_WS_URL ?? API_BASE.replace(/^http/, "ws");
-  return `${base}/ws/wiring`;
+  return wsUrl("/ws/wiring");
 }
 
 export function getFirmwareWsUrl(): string {
-  const base = process.env.NEXT_PUBLIC_WS_URL ?? API_BASE.replace(/^http/, "ws");
-  return `${base}/ws/firmware`;
+  return wsUrl("/ws/firmware");
 }
 
 export { API_BASE };

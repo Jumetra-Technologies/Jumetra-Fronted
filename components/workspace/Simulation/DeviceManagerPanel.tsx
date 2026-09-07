@@ -2,29 +2,22 @@
 
 import { api } from "@/lib/api-client";
 import { Badge } from "@/components/ui/badge";
-import { useDeviceStore } from "@/stores/device-store";
 import { useWorkspaceStore } from "@/stores/workspace-store";
-import { useSimulationStore } from "@/stores/simulation-store";
-import type { DeviceMode, WorkspaceState } from "@/lib/workspace-types";
+import type { DeviceMode } from "@/lib/workspace-types";
+import { applyWorkspaceSnapshot } from "@/lib/workspace-snapshot";
 import { cn } from "@/lib/utils";
 
 const MODES: DeviceMode[] = ["physical", "virtual", "simulator", "hybrid"];
 
 export function DeviceManagerPanel({ workspaceId }: { workspaceId: string }) {
-  const devices = useDeviceStore((s) => s.devices);
-  const setDevices = useDeviceStore((s) => s.setDevices);
-  const setCanvas = useWorkspaceStore((s) => s.setCanvas);
-  const applyState = useSimulationStore((s) => s.applyState);
+  const devices = useWorkspaceStore((s) => s.nodes);
 
   async function setMode(id: string, mode: DeviceMode) {
     await api.updateWorkspaceNode(workspaceId, id, {
       device_mode: mode,
       available: mode !== "physical",
     });
-    const state = (await api.getEngineeringWorkspaceState(workspaceId)) as unknown as WorkspaceState;
-    applyState(state);
-    setCanvas(state.canvas.nodes, state.canvas.edges);
-    setDevices(state.canvas.nodes);
+    applyWorkspaceSnapshot(await api.getEngineeringWorkspaceState(workspaceId));
   }
 
   return (

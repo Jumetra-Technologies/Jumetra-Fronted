@@ -8,7 +8,6 @@ import { LogicAnalyzer } from "@/components/workspace/Monitors/LogicAnalyzer";
 import { WireEditor } from "@/components/workspace/Wire/WireEditor";
 import { useWorkspaceStore } from "@/stores/workspace-store";
 import { useSelectionStore } from "@/stores/selection-store";
-import { useDeviceStore } from "@/stores/device-store";
 
 vi.mock("@/lib/api-client", () => ({
   api: {
@@ -34,7 +33,6 @@ afterEach(() => {
 beforeEach(() => {
   useWorkspaceStore.setState({ nodes: [], wires: [], workspaceId: null, name: "Untitled" });
   useSelectionStore.setState({ selectedIds: [], clipboard: [] });
-  useDeviceStore.setState({ devices: [] });
 });
 
 describe("SimulationToolbar", () => {
@@ -83,8 +81,8 @@ describe("PropertyInspector", () => {
 
 describe("DeviceManagerPanel", () => {
   it("renders device modes", () => {
-    useDeviceStore.setState({
-      devices: [
+    useWorkspaceStore.setState({
+      nodes: [
         {
           id: "N1",
           component_id: "esp32",

@@ -2,54 +2,54 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import {
-  BarChart3,
-  Beaker,
-  Boxes,
-  FileText,
-  FlaskConical,
-  Home,
-  LayoutDashboard,
-  Menu,
-  Moon,
-  Settings,
-  ShoppingBag,
-  Sun,
-  Workflow,
-  X,
-} from "lucide-react";
+import { Menu, Moon, Sun, X } from "lucide-react";
 import { useTheme } from "@/components/theme/theme-provider";
 import { Button } from "@/components/ui/button";
+import { NAV_ITEMS } from "@/components/layout/nav-items";
 import { cn } from "@/lib/utils";
-
-const navItems = [
-  { href: "/", label: "Home", icon: Home },
-  { href: "/workspace", label: "Projects", icon: Boxes },
-  { href: "/laboratory/workspace", label: "Laboratory", icon: Beaker, primary: true },
-  { href: "/experiments", label: "Experiments", icon: FlaskConical },
-  { href: "/marketplace", label: "Marketplace", icon: ShoppingBag },
-  { href: "/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/reports", label: "Reports", icon: FileText },
-  { href: "/settings", label: "Settings", icon: Settings },
-  { href: "/dashboard", label: "Research Overview", icon: LayoutDashboard },
-  { href: "/hybrid", label: "Hybrid Bridge", icon: Workflow },
-];
 
 function NavLinks({
   activePath,
   onNavigate,
+  collapsed = false,
 }: {
   activePath: string;
   onNavigate?: () => void;
+  collapsed?: boolean;
 }) {
+  const items = collapsed ? NAV_ITEMS.slice(0, 8) : NAV_ITEMS;
   return (
-    <nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Primary">
-      {navItems.map((item) => {
+    <nav
+      className={cn(
+        "flex flex-1 flex-col gap-1",
+        collapsed ? "items-center p-2" : "p-3",
+      )}
+      aria-label="Primary"
+    >
+      {items.map((item) => {
         const Icon = item.icon;
         const active =
           item.href === "/"
             ? activePath === "/"
             : activePath === item.href || activePath.startsWith(`${item.href}/`);
+        if (collapsed) {
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              title={item.label}
+              className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-[10px] transition-colors",
+                active
+                  ? "bg-primary text-primary-foreground"
+                  : "text-sidebar-muted hover:bg-white/5 hover:text-white",
+              )}
+            >
+              <Icon className="h-4 w-4" aria-hidden />
+              <span className="sr-only">{item.label}</span>
+            </Link>
+          );
+        }
         return (
           <Link
             key={item.href}
@@ -93,31 +93,7 @@ export function Sidebar({
         <div className="flex items-center justify-center border-b border-white/10 py-4">
           <span className="text-xs font-bold tracking-widest text-white">H</span>
         </div>
-        <nav className="flex flex-1 flex-col items-center gap-1 p-2" aria-label="Primary">
-          {navItems.slice(0, 8).map((item) => {
-            const Icon = item.icon;
-            const active =
-              item.href === "/"
-                ? activePath === "/"
-                : activePath === item.href || activePath.startsWith(`${item.href}/`);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                title={item.label}
-                className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-[10px] transition-colors",
-                  active
-                    ? "bg-primary text-primary-foreground"
-                    : "text-sidebar-muted hover:bg-white/5 hover:text-white",
-                )}
-              >
-                <Icon className="h-4 w-4" aria-hidden />
-                <span className="sr-only">{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
+        <NavLinks activePath={activePath} collapsed />
         <div className="p-2">
           <Button
             size="icon"

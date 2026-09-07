@@ -23,7 +23,8 @@ export type LivePinState = {
   state?: string;
 };
 
-export type HardwarePin = {
+/** Live physical-board pin (distinct from canvas `HardwarePin` in lib/hardware). */
+export type LiveHardwarePin = {
   name: string;
   pin_id?: string;
   number: number | string;
@@ -38,6 +39,9 @@ export type HardwarePin = {
   state?: LivePinState;
 };
 
+/** @deprecated Use LiveHardwarePin — kept for gradual migration. */
+export type HardwarePin = LiveHardwarePin;
+
 export type WorkspaceHardwareNode = {
   device_id: string;
   node_id?: string;
@@ -45,7 +49,7 @@ export type WorkspaceHardwareNode = {
   manufacturer?: string;
   transport?: string;
   firmware_version?: string;
-  pins?: HardwarePin[];
+  pins?: LiveHardwarePin[];
   capabilities?: string[];
   status?: string;
   heartbeat_ms?: number;

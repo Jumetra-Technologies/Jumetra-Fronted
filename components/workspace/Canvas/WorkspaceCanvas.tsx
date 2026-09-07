@@ -23,16 +23,24 @@ import { HardwareNode, type HardwareNodeData } from "@/components/workspace/Canv
 import { LiveWire } from "@/components/workspace/LiveWire";
 import { getHardwareAssetOrFallback, getPinById } from "@/lib/hardware/registry";
 import { inferWireProtocol, signalColor } from "@/lib/hardware/signal-colors";
+import type { HardwarePin } from "@/lib/hardware/types";
 import { useWorkspaceStore } from "@/stores/workspace-store";
 import { useSelectionStore } from "@/stores/selection-store";
-import { useSimulationStore } from "@/stores/simulation-store";
-import { useDeviceStore } from "@/stores/device-store";
 import { useUIStore } from "@/stores/ui-store";
 import { inferBusFromHandles, validateLiveConnection } from "@/lib/hardware/connection-validation";
-import type { WorkspaceNode, WorkspaceState, WorkspaceWire } from "@/lib/workspace-types";
+import { applyWorkspaceSnapshot } from "@/lib/workspace-snapshot";
+import { setPinClickHandler } from "@/lib/pin-click-bridge";
+import type { WorkspaceNode, WorkspaceWire } from "@/lib/workspace-types";
 
 const nodeTypes = { hardware: HardwareNode };
 const edgeTypes = { signal: LiveWire };
+
+type CatalogPinHint = Array<{ name?: string; type?: string }>;
+
+function catalogPinsOf(node: WorkspaceNode): CatalogPinHint | undefined {
+  const pins = node.properties?.catalog_pins;
+  return Array.isArray(pins) ? (pins as CatalogPinHint) : undefined;
+}
 
 function toFlowNodes(nodes: WorkspaceNode[], selectedIds: string[]): Node<HardwareNodeData>[] {
   return nodes.map((n) => {
@@ -43,7 +51,13 @@ function toFlowNodes(nodes: WorkspaceNode[], selectedIds: string[]): Node<Hardwa
       position: n.position,
       selected: selectedIds.includes(n.id),
       data: { workspaceNode: n },
-      style: { width: asset.metadata.width, height: asset.metadata.height, padding: 0, border: "none", background: "transparent" },
+      style: {
+        width: asset.metadata.width,
+        height: asset.metadata.height,
+        padding: 0,
+        border: "none",
+        background: "transparent",
+      },
     };
   });
 }
@@ -58,7 +72,10 @@ function toFlowEdges(wires: WorkspaceWire[]): Edge[] {
     targetHandle: w.targetHandle,
     label: w.bus?.address ? `${w.bus.type} ${w.bus.address}` : w.label,
     animated: w.valid !== false,
-    style: { stroke: w.valid === false ? "#dc2626" : w.color ?? signalColor(w.protocol), strokeWidth: 2.5 },
+    style: {
+      stroke: w.valid === false ? "#dc2626" : w.color ?? signalColor(w.protocol),
+      strokeWidth: 2.5,
+    },
     data: {
       protocol: w.protocol,
       color: w.valid === false ? "#dc2626" : w.color ?? signalColor(w.protocol),
@@ -69,25 +86,63 @@ function toFlowEdges(wires: WorkspaceWire[]): Edge[] {
   }));
 }
 
+function checkPins(
+  nodes: WorkspaceNode[],
+  sourceNodeId: string,
+  sourcePinId: string,
+  targetNodeId: string,
+  targetPinId: string,
+): { valid: boolean; reason?: string; srcPin?: HardwarePin; tgtPin?: HardwarePin; protocol: string; busType?: string } {
+  const srcNode = nodes.find((n) => n.id === sourceNodeId);
+  const tgtNode = nodes.find((n) => n.id === targetNodeId);
+  if (!srcNode || !tgtNode) {
+    return { valid: false, reason: "Missing node", protocol: "digital" };
+  }
+  const srcAsset = getHardwareAssetOrFallback(srcNode.component_id, catalogPinsOf(srcNode));
+  const tgtAsset = getHardwareAssetOrFallback(tgtNode.component_id, catalogPinsOf(tgtNode));
+  const srcPin = getPinById(srcAsset, sourcePinId);
+  const tgtPin = getPinById(tgtAsset, targetPinId);
+  const targetMaxV = Number(
+    (tgtNode.properties?.voltage as { max?: number } | undefined)?.max ?? tgtPin?.voltage ?? 3.3,
+  );
+  const result = validateLiveConnection(srcPin, tgtPin, {
+    sourceLabel: `${srcNode.component_id} ${sourcePinId}`,
+    targetMaxV,
+  });
+  const protocol = inferWireProtocol(
+    srcPin?.interfaces.map(String) ?? ["digital"],
+    tgtPin?.interfaces.map(String) ?? ["digital"],
+  );
+  const bus = inferBusFromHandles(sourcePinId, targetPinId);
+  return {
+    valid: result.valid,
+    reason: result.reason,
+    srcPin,
+    tgtPin,
+    protocol: bus?.type.toLowerCase() || protocol,
+    busType: bus?.type,
+  };
+}
+
 function CanvasInner({ workspaceId }: { workspaceId: string }) {
   const nodes = useWorkspaceStore((s) => s.nodes);
   const wires = useWorkspaceStore((s) => s.wires);
-  const setCanvas = useWorkspaceStore((s) => s.setCanvas);
+  const upsertNode = useWorkspaceStore((s) => s.upsertNode);
   const setSelection = useSelectionStore((s) => s.setSelection);
   const selectedIds = useSelectionStore((s) => s.selectedIds);
-  const applyState = useSimulationStore((s) => s.applyState);
-  const setDevices = useDeviceStore((s) => s.setDevices);
   const snapGrid = useUIStore((s) => s.snapGrid);
   const wireToolActive = useUIStore((s) => s.wireToolActive);
   const wiringSource = useUIStore((s) => s.wiringSource);
   const setWiringSource = useUIStore((s) => s.setWiringSource);
-  const setOnPinClick = useUIStore((s) => s.setOnPinClick);
   const breadboardMode = useUIStore((s) => s.breadboardMode);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const { screenToFlowPosition } = useReactFlow();
 
   const [flowNodes, setFlowNodes, onNodesChange] = useNodesState(toFlowNodes(nodes, selectedIds));
   const [flowEdges, setFlowEdges, onEdgesChange] = useEdgesState(toFlowEdges(wires));
+  const [connectionHint, setConnectionHint] = useState<string | null>(null);
+  const [connectionValid, setConnectionValid] = useState(true);
+  const validationRef = useRef({ valid: true, reason: null as string | null });
 
   useEffect(() => {
     setFlowNodes(toFlowNodes(nodes, selectedIds));
@@ -97,39 +152,13 @@ function CanvasInner({ workspaceId }: { workspaceId: string }) {
     setFlowEdges(toFlowEdges(wires));
   }, [wires, setFlowEdges]);
 
-  const applyServerState = useCallback(
-    (state: WorkspaceState) => {
-      applyState(state);
-      const canvasNodes = (state.canvas?.nodes ?? []) as WorkspaceNode[];
-      const canvasWires = (state.canvas?.edges ?? []) as WorkspaceWire[];
-      setCanvas(canvasNodes, canvasWires);
-      setDevices(canvasNodes);
-    },
-    [applyState, setCanvas, setDevices],
-  );
-
-  const [connectionHint, setConnectionHint] = useState<string | null>(null);
-  const [connectionValid, setConnectionValid] = useState(true);
+  const refresh = useCallback(async () => {
+    applyWorkspaceSnapshot(await api.getEngineeringWorkspaceState(workspaceId));
+  }, [workspaceId]);
 
   const connectPins = useCallback(
     async (sourceNodeId: string, sourcePinId: string, targetNodeId: string, targetPinId: string) => {
-      const srcNode = nodes.find((n) => n.id === sourceNodeId);
-      const tgtNode = nodes.find((n) => n.id === targetNodeId);
-      if (!srcNode || !tgtNode) return;
-      const srcAsset = getHardwareAssetOrFallback(
-        srcNode.component_id,
-        srcNode.properties?.catalog_pins as never,
-      );
-      const tgtAsset = getHardwareAssetOrFallback(
-        tgtNode.component_id,
-        tgtNode.properties?.catalog_pins as never,
-      );
-      const srcPin = getPinById(srcAsset, sourcePinId);
-      const tgtPin = getPinById(tgtAsset, targetPinId);
-      const check = validateLiveConnection(srcPin, tgtPin, {
-        sourceLabel: `${srcNode.component_id} ${sourcePinId}`,
-        targetMaxV: Number((tgtNode.properties?.voltage as { max?: number } | undefined)?.max ?? tgtPin?.voltage ?? 3.3),
-      });
+      const check = checkPins(nodes, sourceNodeId, sourcePinId, targetNodeId, targetPinId);
       if (!check.valid) {
         setConnectionHint(check.reason || "Invalid connection");
         setConnectionValid(false);
@@ -137,50 +166,22 @@ function CanvasInner({ workspaceId }: { workspaceId: string }) {
       }
       setConnectionHint(null);
       setConnectionValid(true);
-      const protocol = inferWireProtocol(
-        srcPin?.interfaces.map(String) ?? ["digital"],
-        tgtPin?.interfaces.map(String) ?? ["digital"],
-      );
-      const bus = inferBusFromHandles(sourcePinId, targetPinId);
       try {
         await api.addWorkspaceWire(workspaceId, {
           source: sourceNodeId,
           target: targetNodeId,
           source_handle: sourcePinId,
           target_handle: targetPinId,
-          protocol: bus?.type.toLowerCase() || protocol,
-          voltage_v: srcPin?.voltage ?? tgtPin?.voltage ?? 3.3,
+          protocol: check.protocol,
+          voltage_v: check.srcPin?.voltage ?? check.tgtPin?.voltage ?? 3.3,
         });
-        // Sprint 30 — auto hybrid mapping (physical↔virtual / any↔any)
-        const srcKind = srcNode.device_mode === "physical" ? "physical" : "virtual";
-        const tgtKind = tgtNode.device_mode === "physical" ? "physical" : "virtual";
-        try {
-          await api.createWorkspaceConnection({
-            source_device: sourceNodeId,
-            source_pin: sourcePinId,
-            destination_device: targetNodeId,
-            destination_pin: targetPinId,
-            wire_type: bus?.type.toLowerCase() || protocol,
-            workspace_id: workspaceId,
-            auto: true,
-            drag: true,
-            source_kind: srcKind,
-            destination_kind: tgtKind,
-            source_pin_type: String(srcPin?.interfaces?.[0] || "GPIO").toUpperCase(),
-            destination_pin_type: String(tgtPin?.interfaces?.[0] || "GPIO").toUpperCase(),
-            source_voltage: srcPin?.voltage ?? 3.3,
-            destination_voltage: tgtPin?.voltage ?? 3.3,
-          });
-        } catch {
-          /* validation rejected hybrid wire — canvas wire may still exist */
-        }
-        const state = (await api.getEngineeringWorkspaceState(workspaceId)) as unknown as WorkspaceState;
-        applyServerState(state);
+        await refresh();
       } catch {
-        /* validation failed */
+        setConnectionHint("Failed to create wire");
+        setConnectionValid(false);
       }
     },
-    [nodes, workspaceId, applyServerState],
+    [nodes, workspaceId, refresh],
   );
 
   const isValidConnection = useCallback(
@@ -189,32 +190,17 @@ function CanvasInner({ workspaceId }: { workspaceId: string }) {
       const target = connection.target;
       const sourceHandle = connection.sourceHandle ?? null;
       const targetHandle = connection.targetHandle ?? null;
-      if (!source || !target || !sourceHandle || !targetHandle) {
-        return false;
-      }
-      if (source === target && sourceHandle === targetHandle) {
-        return false;
-      }
-      const srcNode = nodes.find((n) => n.id === source);
-      const tgtNode = nodes.find((n) => n.id === target);
-      if (!srcNode || !tgtNode) return false;
-      const srcAsset = getHardwareAssetOrFallback(srcNode.component_id, srcNode.properties?.catalog_pins as never);
-      const tgtAsset = getHardwareAssetOrFallback(tgtNode.component_id, tgtNode.properties?.catalog_pins as never);
-      const srcPin = getPinById(srcAsset, sourceHandle);
-      const tgtPin = getPinById(tgtAsset, targetHandle);
-      const result = validateLiveConnection(srcPin, tgtPin, {
-        sourceLabel: `${srcNode.component_id} ${sourceHandle}`,
-        targetMaxV: Number((tgtNode.properties?.voltage as { max?: number } | undefined)?.max ?? tgtPin?.voltage ?? 3.3),
-      });
-      setConnectionValid(result.valid);
-      setConnectionHint(result.valid ? null : result.reason || "Invalid connection");
+      if (!source || !target || !sourceHandle || !targetHandle) return false;
+      if (source === target && sourceHandle === targetHandle) return false;
+      const result = checkPins(nodes, source, sourceHandle, target, targetHandle);
+      validationRef.current = { valid: result.valid, reason: result.reason || null };
       return result.valid;
     },
     [nodes],
   );
 
   useEffect(() => {
-    setOnPinClick(async (nodeId, pinId) => {
+    setPinClickHandler(async (nodeId, pinId) => {
       if (!wireToolActive && !wiringSource) return;
       if (!wiringSource) {
         const n = nodes.find((x) => x.id === nodeId);
@@ -234,12 +220,14 @@ function CanvasInner({ workspaceId }: { workspaceId: string }) {
       await connectPins(wiringSource.nodeId, wiringSource.pinId, nodeId, pinId);
       setWiringSource(null);
     });
-    return () => setOnPinClick(null);
-  }, [wireToolActive, wiringSource, nodes, connectPins, setWiringSource, setOnPinClick]);
+    return () => setPinClickHandler(null);
+  }, [wireToolActive, wiringSource, nodes, connectPins, setWiringSource]);
 
   const onConnect = useCallback(
     async (connection: Connection) => {
       if (!connection.source || !connection.target) return;
+      setConnectionHint(validationRef.current.reason);
+      setConnectionValid(validationRef.current.valid);
       await connectPins(
         connection.source,
         connection.sourceHandle ?? "out",
@@ -288,14 +276,13 @@ function CanvasInner({ workspaceId }: { workspaceId: string }) {
           position,
           device_mode: "virtual",
         });
-        useWorkspaceStore.getState().upsertNode(created as never);
-        const state = (await api.getEngineeringWorkspaceState(workspaceId)) as unknown as WorkspaceState;
-        applyServerState(state);
+        upsertNode(created);
+        await refresh();
       } catch {
         /* ignore */
       }
     },
-    [workspaceId, screenToFlowPosition, applyServerState],
+    [workspaceId, screenToFlowPosition, upsertNode, refresh],
   );
 
   useEffect(() => {
@@ -305,33 +292,27 @@ function CanvasInner({ workspaceId }: { workspaceId: string }) {
       if (e.key === "Escape") setWiringSource(null);
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
         e.preventDefault();
-        api.undoWorkspace(workspaceId).then((s) => applyServerState(s as unknown as WorkspaceState));
+        void api.undoWorkspace(workspaceId).then(applyWorkspaceSnapshot);
       }
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
         e.preventDefault();
-        api.redoWorkspace(workspaceId).then((s) => applyServerState(s as unknown as WorkspaceState));
+        void api.redoWorkspace(workspaceId).then(applyWorkspaceSnapshot);
       }
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "d") {
         e.preventDefault();
         if (selectedIds.length) {
-          api.duplicateWorkspaceNodes(workspaceId, selectedIds).then(async () => {
-            const s = (await api.getEngineeringWorkspaceState(workspaceId)) as unknown as WorkspaceState;
-            applyServerState(s);
-          });
+          void api.duplicateWorkspaceNodes(workspaceId, selectedIds).then(() => refresh());
         }
       }
       if (e.key === "Delete" || e.key === "Backspace") {
         if (selectedIds.length) {
-          api.deleteWorkspaceNodes(workspaceId, selectedIds).then(async () => {
-            const s = (await api.getEngineeringWorkspaceState(workspaceId)) as unknown as WorkspaceState;
-            applyServerState(s);
-          });
+          void api.deleteWorkspaceNodes(workspaceId, selectedIds).then(applyWorkspaceSnapshot);
         }
       }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [workspaceId, selectedIds, applyServerState, setWiringSource]);
+  }, [workspaceId, selectedIds, setWiringSource, refresh]);
 
   const defaultEdgeOptions = useMemo(() => ({ type: "signal" as const }), []);
 

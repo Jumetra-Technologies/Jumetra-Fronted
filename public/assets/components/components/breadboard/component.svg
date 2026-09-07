@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 280" width="400" height="280">
-  <rect x="2" y="2" width="396" height="276" rx="8" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="2"/>
-  <text x="200" y="140" text-anchor="middle" fill="#64748B" font-family="monospace" font-size="12">Breadboard</text>
-</svg>

@@ -11,9 +11,10 @@ import {
   type DiscoveredHardwareDevice,
 } from "@/stores/discovery-store";
 import { useWorkspaceStore } from "@/stores/workspace-store";
-import { useSimulationStore } from "@/stores/simulation-store";
-import { useDeviceStore } from "@/stores/device-store";
-import type { WorkspaceState } from "@/lib/workspace-types";
+import {
+  applyWorkspaceSnapshot,
+  isNotFoundError,
+} from "@/lib/workspace-snapshot";
 import { cn } from "@/lib/utils";
 
 const BOARD_COMPONENT_MAP: Record<string, string> = {
@@ -136,9 +137,6 @@ export function HardwareDiscoveryPanel({
   const setDevices = useDiscoveryStore((s) => s.setDevices);
   const setConnected = useDiscoveryStore((s) => s.setConnected);
   const upsertNode = useWorkspaceStore((s) => s.upsertNode);
-  const setCanvas = useWorkspaceStore((s) => s.setCanvas);
-  const applyState = useSimulationStore((s) => s.applyState);
-  const setDeviceNodes = useDeviceStore((s) => s.setDevices);
   const [apiError, setApiError] = useState<string | null>(null);
   const [addingPort, setAddingPort] = useState<string | null>(null);
 
@@ -151,13 +149,6 @@ export function HardwareDiscoveryPanel({
       setApiError(err instanceof Error ? err.message : "Discovery scan failed");
     }
   }, [setDevices]);
-
-  async function refreshWorkspaceState(activeWorkspaceId: string) {
-    const state = (await api.getEngineeringWorkspaceState(activeWorkspaceId)) as unknown as WorkspaceState;
-    applyState(state);
-    setCanvas(state.canvas.nodes, state.canvas.edges);
-    setDeviceNodes(state.canvas.nodes);
-  }
 
   const addPhysicalToCanvas = useCallback(
     async (device: DiscoveredHardwareDevice) => {
@@ -177,15 +168,15 @@ export function HardwareDiscoveryPanel({
           physical_device_id: device.device_id ?? device.port,
           available: true,
         });
-        upsertNode(node as never);
-        await refreshWorkspaceState(activeWorkspaceId);
+        upsertNode(node);
+        applyWorkspaceSnapshot(await api.getEngineeringWorkspaceState(activeWorkspaceId));
       }
 
       try {
         await place(workspaceId);
       } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to add device";
-        if (message.includes("404") && onWorkspaceRecover) {
+        if (isNotFoundError(err) && onWorkspaceRecover) {
           const newId = await onWorkspaceRecover();
           if (newId) {
             await place(newId);
@@ -197,7 +188,7 @@ export function HardwareDiscoveryPanel({
         setAddingPort(null);
       }
     },
-    [workspaceId, onWorkspaceRecover, upsertNode, applyState, setCanvas, setDeviceNodes],
+    [workspaceId, onWorkspaceRecover, upsertNode],
   );
 
   useEffect(() => {

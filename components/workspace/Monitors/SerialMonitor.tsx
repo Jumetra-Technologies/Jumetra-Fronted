@@ -5,6 +5,7 @@ import { api } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSimulationStore } from "@/stores/simulation-store";
+import { applyWorkspaceSnapshot } from "@/lib/workspace-snapshot";
 
 export function SerialMonitor({ workspaceId }: { workspaceId: string }) {
   const serial = useSimulationStore((s) => s.serial);
@@ -23,8 +24,7 @@ export function SerialMonitor({ workspaceId }: { workspaceId: string }) {
     if (!line.trim()) return;
     await api.sendWorkspaceSerial(workspaceId, line);
     setLine("");
-    const state = await api.getEngineeringWorkspaceState(workspaceId);
-    useSimulationStore.getState().applyState(state as never);
+    applyWorkspaceSnapshot(await api.getEngineeringWorkspaceState(workspaceId));
   }
 
   function exportLog() {

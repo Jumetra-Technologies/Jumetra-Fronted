@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSimulationStore } from "@/stores/simulation-store";
 import { useUIStore } from "@/stores/ui-store";
+import { applyWorkspaceSnapshot } from "@/lib/workspace-snapshot";
 import type { BottomPanelTab } from "@/lib/workspace-types";
 import { cn } from "@/lib/utils";
 
@@ -172,8 +173,7 @@ export function BottomDock({ workspaceId }: { workspaceId: string }) {
                 if (!line.trim()) return;
                 await api.sendWorkspaceSerial(workspaceId, line);
                 setLine("");
-                const state = await api.getEngineeringWorkspaceState(workspaceId);
-                useSimulationStore.getState().applyState(state as never);
+                applyWorkspaceSnapshot(await api.getEngineeringWorkspaceState(workspaceId));
               }}
             >
               <Input

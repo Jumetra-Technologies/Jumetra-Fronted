@@ -1,8 +1,0 @@
-{
-  "id": "relay",
-  "name": "Relay Module",
-  "width": 80,
-  "height": 100,
-  "category": "robotics",
-  "defaultVoltage": 5
-}

@@ -1,8 +1,0 @@
-{
-  "id": "push-button",
-  "name": "Push Button",
-  "width": 60,
-  "height": 70,
-  "category": "sensors",
-  "defaultVoltage": 3.3
-}

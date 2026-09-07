@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { api, getWorkspaceWsUrl } from "@/lib/api-client";
 import { WorkspaceCanvas } from "@/components/workspace/Canvas/WorkspaceCanvas";
-import { ComponentExplorerPro } from "@/components/workspace/DeviceExplorer/ComponentExplorerPro";
 import { ComponentBrowser } from "@/components/library/ComponentBrowser";
 import { ComponentInspector } from "@/components/library/ComponentInspector";
 import type { ComponentV2SearchHit } from "@/lib/types";
@@ -34,55 +33,65 @@ import type { WorkspaceConnection } from "@/components/workspace/ConnectionManag
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/theme/theme-provider";
 import { useWorkspaceStore } from "@/stores/workspace-store";
-import { useSimulationStore } from "@/stores/simulation-store";
-import { useDeviceStore } from "@/stores/device-store";
 import { useUIStore } from "@/stores/ui-store";
-import type { WorkspaceState } from "@/lib/workspace-types";
+import { WORKSPACE_NAV_ITEMS } from "@/components/layout/nav-items";
 import type { WorkspaceHardwareNode } from "@/components/workspace/hardware-types";
+import {
+  applyWorkspaceSnapshot,
+  isNotFoundError,
+  persistWorkspaceId,
+  readPersistedWorkspaceId,
+} from "@/lib/workspace-snapshot";
 import { cn } from "@/lib/utils";
 
-type RightTab = "properties" | "devices" | "wires" | "inspector" | "hardware" | "livewire" | "datasheet";
-type LeftTab = "v2" | "classic";
+type RightTab = "properties" | "devices" | "wires" | "metrics" | "hardware" | "livewire" | "datasheet";
 
 export function EngineeringWorkspaceShell() {
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [rightTab, setRightTab] = useState<RightTab>("properties");
-  const [leftTab, setLeftTab] = useState<LeftTab>("v2");
   const [inspectV2, setInspectV2] = useState<ComponentV2SearchHit | null>(null);
   const [selectedHardware, setSelectedHardware] = useState<WorkspaceHardwareNode | null>(null);
   const [hardwareInspector, setHardwareInspector] = useState<Record<string, unknown> | null>(null);
   const [selectedConnection, setSelectedConnection] = useState<WorkspaceConnection | null>(null);
   const [tracePath, setTracePath] = useState<string[]>([]);
   const { theme, toggleTheme } = useTheme();
-  const setWorkspace = useWorkspaceStore((s) => s.setWorkspace);
-  const setCanvas = useWorkspaceStore((s) => s.setCanvas);
-  const applyState = useSimulationStore((s) => s.applyState);
-  const setDevices = useDeviceStore((s) => s.setDevices);
+  const upsertNode = useWorkspaceStore((s) => s.upsertNode);
   const leftOpen = useUIStore((s) => s.leftOpen);
   const rightOpen = useUIStore((s) => s.rightOpen);
   const setLeftOpen = useUIStore((s) => s.setLeftOpen);
   const setRightOpen = useUIStore((s) => s.setRightOpen);
 
-  const bootstrapWorkspace = useCallback(async () => {
+  const adoptWorkspace = useCallback(async (id: string) => {
+    const connected = await api.connectEngineeringWorkspace(id);
+    applyWorkspaceSnapshot(connected);
+    persistWorkspaceId(id);
+    setWorkspaceId(id);
+    return id;
+  }, []);
+
+  const createWorkspace = useCallback(async () => {
     const created = await api.createEngineeringWorkspace({ name: "Engineering Lab" });
-    setWorkspaceId(created.workspace_id);
-    setWorkspace(created.workspace_id, created.name);
-    const connected = (await api.connectEngineeringWorkspace(
-      created.workspace_id,
-    )) as unknown as WorkspaceState;
-    applyState(connected);
-    setCanvas(connected.canvas?.nodes ?? [], connected.canvas?.edges ?? []);
-    setDevices(connected.canvas?.nodes ?? []);
-    return created.workspace_id;
-  }, [setWorkspace, setCanvas, applyState, setDevices]);
+    return adoptWorkspace(created.workspace_id);
+  }, [adoptWorkspace]);
+
+  const bootstrapWorkspace = useCallback(async () => {
+    const existing = readPersistedWorkspaceId();
+    if (existing) {
+      try {
+        return await adoptWorkspace(existing);
+      } catch (err) {
+        if (!isNotFoundError(err)) throw err;
+      }
+    }
+    return createWorkspace();
+  }, [adoptWorkspace, createWorkspace]);
 
   const recoverWorkspace = useCallback(async () => {
     setError("");
-    const id = await bootstrapWorkspace();
-    return id;
-  }, [bootstrapWorkspace]);
+    return createWorkspace();
+  }, [createWorkspace]);
 
   useEffect(() => {
     let cancelled = false;
@@ -109,17 +118,12 @@ export function EngineeringWorkspaceShell() {
       ws = new WebSocket(getWorkspaceWsUrl(workspaceId));
       ws.onmessage = (ev) => {
         try {
-          const msg = JSON.parse(ev.data);
+          const msg = JSON.parse(ev.data) as { type?: string; payload?: unknown };
           if (msg.type === "workspace_state" && msg.payload) {
-            const state = msg.payload as WorkspaceState;
-            applyState(state);
-            if (state.canvas) {
-              setCanvas(state.canvas.nodes, state.canvas.edges);
-              setDevices(state.canvas.nodes);
-            }
+            applyWorkspaceSnapshot(msg.payload);
           }
         } catch {
-          /* ignore */
+          /* ignore malformed frames */
         }
       };
       const interval = setInterval(() => {
@@ -132,7 +136,7 @@ export function EngineeringWorkspaceShell() {
     } catch {
       return;
     }
-  }, [workspaceId, applyState, setCanvas, setDevices]);
+  }, [workspaceId]);
 
   if (loading) {
     return (
@@ -146,6 +150,17 @@ export function EngineeringWorkspaceShell() {
       <div className="flex h-screen flex-col items-center justify-center gap-2 bg-background text-sm">
         <p className="text-danger">{error || "Workspace unavailable"}</p>
         <p className="text-muted">Ensure the API is running on port 8000.</p>
+        <Button
+          size="sm"
+          onClick={() => {
+            setLoading(true);
+            void recoverWorkspace()
+              .catch((err) => setError(err instanceof Error ? err.message : "Recover failed"))
+              .finally(() => setLoading(false));
+          }}
+        >
+          Create new workspace
+        </Button>
       </div>
     );
   }
@@ -163,27 +178,18 @@ export function EngineeringWorkspaceShell() {
           <span className="text-sm font-semibold tracking-tight">Engineering Workspace</span>
         </div>
         <nav className="hidden items-center gap-1 md:flex" aria-label="Workspace">
-          {[
-            ["/", "Home"],
-            ["/workspace", "Projects"],
-            ["/laboratory/workspace", "Laboratory"],
-            ["/firmware", "Firmware"],
-            ["/experiments", "Experiments"],
-            ["/marketplace", "Marketplace"],
-            ["/analytics", "Analytics"],
-            ["/settings", "Settings"],
-          ].map(([href, label]) => (
+          {WORKSPACE_NAV_ITEMS.map((item) => (
             <Link
-              key={href}
-              href={href}
+              key={item.href}
+              href={item.href}
               className={cn(
                 "rounded-[10px] px-2.5 py-1.5 text-xs font-medium transition-colors",
-                href === "/laboratory/workspace"
+                item.href === "/laboratory/workspace"
                   ? "bg-accent text-primary"
                   : "text-muted hover:bg-muted-bg hover:text-foreground",
               )}
             >
-              {label}
+              {item.label}
             </Link>
           ))}
         </nav>
@@ -233,69 +239,38 @@ export function EngineeringWorkspaceShell() {
                   try {
                     const detail = await api.getWorkspaceHardware(node.device_id);
                     setHardwareInspector((detail.inspector as Record<string, unknown>) || null);
-                    setSelectedHardware(detail as WorkspaceHardwareNode);
+                    setSelectedHardware({ ...node, ...(detail as WorkspaceHardwareNode) });
                   } catch {
                     setHardwareInspector(null);
                   }
                 }}
               />
             </div>
-            <div className="flex shrink-0 gap-1 border-b border-border bg-surface px-2 py-1">
-              <button
-                type="button"
-                className={cn(
-                  "rounded px-2 py-1 text-[10px] font-semibold",
-                  leftTab === "v2" ? "bg-sky-600 text-white" : "text-muted hover:bg-muted/40",
-                )}
-                onClick={() => setLeftTab("v2")}
-              >
-                Library v2
-              </button>
-              <button
-                type="button"
-                className={cn(
-                  "rounded px-2 py-1 text-[10px] font-semibold",
-                  leftTab === "classic" ? "bg-sky-600 text-white" : "text-muted hover:bg-muted/40",
-                )}
-                onClick={() => setLeftTab("classic")}
-              >
-                Classic
-              </button>
-            </div>
             <div className="min-h-0 flex-1 overflow-hidden">
-              {leftTab === "v2" ? (
-                <ComponentBrowser
-                  onInspect={(item) => {
-                    setInspectV2(item);
-                    setRightTab("datasheet");
-                  }}
-                  onAddToWorkspace={async (item) => {
-                    try {
-                      const node = await api.addWorkspaceNode(workspaceId, {
-                        component_id: item.id,
-                        position: { x: 140 + Math.random() * 240, y: 100 + Math.random() * 180 },
-                        device_mode: "virtual",
-                      });
-                      useWorkspaceStore.getState().upsertNode(node as never);
-                      await api.createComponentV2Binding({
-                        component_id: item.id,
-                        instance_id: String((node as { id?: string }).id || item.id),
-                        mode: "virtual",
-                      });
-                      const state = (await api.getEngineeringWorkspaceState(
-                        workspaceId,
-                      )) as unknown as WorkspaceState;
-                      applyState(state);
-                      setCanvas(state.canvas?.nodes ?? [], state.canvas?.edges ?? []);
-                      setDevices(state.canvas?.nodes ?? []);
-                    } catch {
-                      /* ignore add errors */
-                    }
-                  }}
-                />
-              ) : (
-                <ComponentExplorerPro workspaceId={workspaceId} onWorkspaceRecover={recoverWorkspace} />
-              )}
+              <ComponentBrowser
+                onInspect={(item) => {
+                  setInspectV2(item);
+                  setRightTab("datasheet");
+                }}
+                onAddToWorkspace={async (item) => {
+                  try {
+                    const node = await api.addWorkspaceNode(workspaceId, {
+                      component_id: item.id,
+                      position: { x: 140 + Math.random() * 240, y: 100 + Math.random() * 180 },
+                      device_mode: "virtual",
+                    });
+                    upsertNode(node);
+                    await api.createComponentV2Binding({
+                      component_id: item.id,
+                      instance_id: node.id || item.id,
+                      mode: "virtual",
+                    });
+                    applyWorkspaceSnapshot(await api.getEngineeringWorkspaceState(workspaceId));
+                  } catch {
+                    /* ignore add errors */
+                  }
+                }}
+              />
             </div>
             <HardwareDiscoveryPanel workspaceId={workspaceId} onWorkspaceRecover={recoverWorkspace} />
           </motion.aside>
@@ -324,7 +299,7 @@ export function EngineeringWorkspaceShell() {
                   ["livewire", "Wiring"],
                   ["devices", "Devices"],
                   ["wires", "Wires"],
-                  ["inspector", "Metrics"],
+                  ["metrics", "Metrics"],
                 ] as const
               ).map(([id, label]) => (
                 <button
@@ -370,7 +345,7 @@ export function EngineeringWorkspaceShell() {
                             end_device: c.destination_device,
                             end_pin: c.destination_pin,
                           });
-                          setTracePath((res.path as string[]) || []);
+                          setTracePath(res.path || []);
                         } catch {
                           setTracePath([
                             `${c.source_device}:${c.source_pin}`,
@@ -384,7 +359,7 @@ export function EngineeringWorkspaceShell() {
               ) : null}
               {rightTab === "devices" ? <DeviceManagerPanel workspaceId={workspaceId} /> : null}
               {rightTab === "wires" ? <WireEditor workspaceId={workspaceId} /> : null}
-              {rightTab === "inspector" ? <SimulationInspector /> : null}
+              {rightTab === "metrics" ? <SimulationInspector /> : null}
             </div>
           </motion.aside>
         ) : null}

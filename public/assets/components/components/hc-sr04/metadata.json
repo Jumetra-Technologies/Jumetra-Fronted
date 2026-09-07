@@ -1,8 +1,0 @@
-{
-  "id": "hc-sr04",
-  "name": "HC-SR04",
-  "width": 120,
-  "height": 70,
-  "category": "sensors",
-  "defaultVoltage": 5
-}

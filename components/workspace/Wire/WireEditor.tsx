@@ -3,25 +3,16 @@
 import { useWorkspaceStore } from "@/stores/workspace-store";
 import { useSelectionStore } from "@/stores/selection-store";
 import { api } from "@/lib/api-client";
-import { useSimulationStore } from "@/stores/simulation-store";
-import { useDeviceStore } from "@/stores/device-store";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { WorkspaceState } from "@/lib/workspace-types";
+import { applyWorkspaceSnapshot } from "@/lib/workspace-snapshot";
 
 export function WireEditor({ workspaceId }: { workspaceId: string }) {
   const wires = useWorkspaceStore((s) => s.wires);
-  const setCanvas = useWorkspaceStore((s) => s.setCanvas);
   const setSelection = useSelectionStore((s) => s.setSelection);
-  const applyState = useSimulationStore((s) => s.applyState);
-  const setDevices = useDeviceStore((s) => s.setDevices);
 
   async function remove(id: string) {
-    await api.deleteWorkspaceWires(workspaceId, [id]);
-    const state = (await api.getEngineeringWorkspaceState(workspaceId)) as unknown as WorkspaceState;
-    applyState(state);
-    setCanvas(state.canvas.nodes, state.canvas.edges);
-    setDevices(state.canvas.nodes);
+    applyWorkspaceSnapshot(await api.deleteWorkspaceWires(workspaceId, [id]));
   }
 
   return (
@@ -72,7 +63,7 @@ export function WireEditor({ workspaceId }: { workspaceId: string }) {
               className="mt-2 text-danger"
               onClick={(e) => {
                 e.stopPropagation();
-                remove(w.id);
+                void remove(w.id);
               }}
             >
               Delete wire

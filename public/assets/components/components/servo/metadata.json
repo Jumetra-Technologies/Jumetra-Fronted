@@ -1,8 +1,0 @@
-{
-  "id": "servo",
-  "name": "Servo Motor",
-  "width": 90,
-  "height": 110,
-  "category": "robotics",
-  "defaultVoltage": 5
-}

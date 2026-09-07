@@ -9,8 +9,8 @@ import { Select } from "@/components/ui/input";
 import { useSelectionStore } from "@/stores/selection-store";
 import { useWorkspaceStore } from "@/stores/workspace-store";
 import { useSimulationStore } from "@/stores/simulation-store";
-import { useDeviceStore } from "@/stores/device-store";
-import type { DeviceMode, WorkspaceState } from "@/lib/workspace-types";
+import type { DeviceMode } from "@/lib/workspace-types";
+import { applyWorkspaceSnapshot } from "@/lib/workspace-snapshot";
 import { cn } from "@/lib/utils";
 import { PinInspectorPanel } from "@/components/workspace/Inspector/PinInspectorPanel";
 
@@ -30,9 +30,6 @@ export function PropertyInspector({ workspaceId }: { workspaceId: string }) {
   const selectedIds = useSelectionStore((s) => s.selectedIds);
   const nodes = useWorkspaceStore((s) => s.nodes);
   const upsertNode = useWorkspaceStore((s) => s.upsertNode);
-  const applyState = useSimulationStore((s) => s.applyState);
-  const setDevices = useDeviceStore((s) => s.setDevices);
-  const setCanvas = useWorkspaceStore((s) => s.setCanvas);
   const consoleLines = useSimulationStore((s) => s.console);
   const wires = useWorkspaceStore((s) => s.wires);
   const selectedPin = useSelectionStore((s) => s.selectedPin);
@@ -51,11 +48,8 @@ export function PropertyInspector({ workspaceId }: { workspaceId: string }) {
 
   async function patch(next: Record<string, unknown>) {
     const updated = await api.updateWorkspaceNode(workspaceId, node!.id, next);
-    upsertNode(updated as never);
-    const state = (await api.getEngineeringWorkspaceState(workspaceId)) as unknown as WorkspaceState;
-    applyState(state);
-    setCanvas(state.canvas.nodes, state.canvas.edges);
-    setDevices(state.canvas.nodes);
+    upsertNode(updated);
+    applyWorkspaceSnapshot(await api.getEngineeringWorkspaceState(workspaceId));
   }
 
   return (

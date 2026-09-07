@@ -9,6 +9,7 @@ import { zoomDetailLevel } from "@/lib/hardware/types";
 import { useWorkspaceStore } from "@/stores/workspace-store";
 import { useUIStore } from "@/stores/ui-store";
 import { useSelectionStore } from "@/stores/selection-store";
+import { invokePinClick } from "@/lib/pin-click-bridge";
 import type { WorkspaceNode } from "@/lib/workspace-types";
 import { cn } from "@/lib/utils";
 
@@ -46,8 +47,6 @@ function HardwareNodeComponent({ id, data, selected }: NodeProps & { data: Hardw
   const wiringSource = useUIStore((s) => s.wiringSource);
   const hoveredPin = useUIStore((s) => s.hoveredPin);
   const setHoveredPin = useUIStore((s) => s.setHoveredPin);
-  const onPinClickHandler = useUIStore((s) => s.onPinClick);
-  const setWiringSource = useUIStore((s) => s.setWiringSource);
   const selectedPin = useSelectionStore((s) => s.selectedPin);
   const setSelectedPin = useSelectionStore((s) => s.setSelectedPin);
 
@@ -60,15 +59,9 @@ function HardwareNodeComponent({ id, data, selected }: NodeProps & { data: Hardw
   const handlePinClick = useCallback(
     (pinId: string) => {
       setSelectedPin({ nodeId: id, pinId });
-      if (onPinClickHandler) {
-        onPinClickHandler(id, pinId);
-        return;
-      }
-      if (wireToolActive) {
-        setWiringSource({ nodeId: id, pinId, protocol: "digital" });
-      }
+      invokePinClick(id, pinId);
     },
-    [id, onPinClickHandler, setSelectedPin, setWiringSource, wireToolActive],
+    [id, setSelectedPin],
   );
 
   const isSourcePin =

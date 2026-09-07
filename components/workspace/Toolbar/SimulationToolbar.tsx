@@ -16,10 +16,8 @@ import { api } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSimulationStore } from "@/stores/simulation-store";
-import { useWorkspaceStore } from "@/stores/workspace-store";
-import { useDeviceStore } from "@/stores/device-store";
 import { useUIStore } from "@/stores/ui-store";
-import type { WorkspaceState } from "@/lib/workspace-types";
+import { applyWorkspaceSnapshot } from "@/lib/workspace-snapshot";
 import { cn } from "@/lib/utils";
 
 const SPEEDS = ["1x", "2x", "5x", "10x", "100x"] as const;
@@ -30,10 +28,7 @@ export function SimulationToolbar({ workspaceId }: { workspaceId: string }) {
   const simTimeMs = useSimulationStore((s) => s.simTimeMs);
   const fps = useSimulationStore((s) => s.fps);
   const eventsPerSec = useSimulationStore((s) => s.eventsPerSec);
-  const applyState = useSimulationStore((s) => s.applyState);
   const setSpeed = useSimulationStore((s) => s.setSpeed);
-  const setCanvas = useWorkspaceStore((s) => s.setCanvas);
-  const setDevices = useDeviceStore((s) => s.setDevices);
   const wireToolActive = useUIStore((s) => s.wireToolActive);
   const setWireToolActive = useUIStore((s) => s.setWireToolActive);
   const snapGrid = useUIStore((s) => s.snapGrid);
@@ -41,13 +36,8 @@ export function SimulationToolbar({ workspaceId }: { workspaceId: string }) {
   const breadboardMode = useUIStore((s) => s.breadboardMode);
   const setBreadboardMode = useUIStore((s) => s.setBreadboardMode);
 
-  async function sync(state: Record<string, unknown>) {
-    const s = state as unknown as WorkspaceState;
-    applyState(s);
-    if (s.canvas) {
-      setCanvas(s.canvas.nodes, s.canvas.edges);
-      setDevices(s.canvas.nodes);
-    }
+  async function sync(state: unknown) {
+    applyWorkspaceSnapshot(state);
   }
 
   return (

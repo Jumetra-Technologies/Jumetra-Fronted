@@ -1,9 +1,0 @@
-{
-  "id": "raspberry-pi-pico",
-  "name": "Raspberry Pi Pico",
-  "width": 260,
-  "height": 110,
-  "category": "pico",
-  "defaultVoltage": 3.3,
-  "description": "RP2040 dual-core microcontroller board"
-}

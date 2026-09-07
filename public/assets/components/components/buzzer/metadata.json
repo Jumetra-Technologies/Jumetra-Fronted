@@ -1,8 +1,0 @@
-{
-  "id": "buzzer",
-  "name": "Buzzer",
-  "width": 60,
-  "height": 70,
-  "category": "robotics",
-  "defaultVoltage": 5
-}

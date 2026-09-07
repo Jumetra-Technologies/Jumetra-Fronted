@@ -1,8 +1,0 @@
-{
-  "id": "led",
-  "name": "LED",
-  "width": 60,
-  "height": 80,
-  "category": "displays",
-  "defaultVoltage": 3.3
-}

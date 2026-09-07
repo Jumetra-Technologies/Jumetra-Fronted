@@ -14,7 +14,6 @@ interface UIStore {
   wiringSource: WiringSource | null;
   hoveredPin: PinSelection | null;
   hoveredEdgeId: string | null;
-  onPinClick: ((nodeId: string, pinId: string) => void) | null;
   setLeftOpen: (v: boolean) => void;
   setRightOpen: (v: boolean) => void;
   setBottomOpen: (v: boolean) => void;
@@ -26,7 +25,6 @@ interface UIStore {
   setWiringSource: (v: WiringSource | null) => void;
   setHoveredPin: (v: PinSelection | null) => void;
   setHoveredEdgeId: (v: string | null) => void;
-  setOnPinClick: (fn: ((nodeId: string, pinId: string) => void) | null) => void;
 }
 
 export const useUIStore = create<UIStore>((set) => ({
@@ -41,7 +39,6 @@ export const useUIStore = create<UIStore>((set) => ({
   wiringSource: null,
   hoveredPin: null,
   hoveredEdgeId: null,
-  onPinClick: null,
   setLeftOpen: (v) => set({ leftOpen: v }),
   setRightOpen: (v) => set({ rightOpen: v }),
   setBottomOpen: (v) => set({ bottomOpen: v }),
@@ -53,5 +50,4 @@ export const useUIStore = create<UIStore>((set) => ({
   setWiringSource: (v) => set({ wiringSource: v }),
   setHoveredPin: (v) => set({ hoveredPin: v }),
   setHoveredEdgeId: (v) => set({ hoveredEdgeId: v }),
-  setOnPinClick: (fn) => set({ onPinClick: fn }),
 }));

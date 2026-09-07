@@ -1,8 +1,0 @@
-{
-  "id": "lcd",
-  "name": "LCD 1602",
-  "width": 160,
-  "height": 80,
-  "category": "displays",
-  "defaultVoltage": 5
-}

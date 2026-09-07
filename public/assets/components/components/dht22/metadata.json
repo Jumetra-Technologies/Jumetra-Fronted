@@ -1,8 +1,0 @@
-{
-  "id": "dht22",
-  "name": "DHT22",
-  "width": 70,
-  "height": 90,
-  "category": "sensors",
-  "defaultVoltage": 3.3
-}
