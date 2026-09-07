@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, Moon, Sun, X } from "lucide-react";
-import { useTheme } from "@/components/theme/theme-provider";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { NAV_ITEMS } from "@/components/layout/nav-items";
 import { cn } from "@/lib/utils";
 
@@ -85,8 +85,6 @@ export function Sidebar({
   collapsed?: boolean;
   onNavigate?: () => void;
 }) {
-  const { theme, toggleTheme } = useTheme();
-
   if (collapsed) {
     return (
       <aside className="hidden w-16 shrink-0 flex-col bg-sidebar text-sidebar-foreground lg:flex">
@@ -95,15 +93,7 @@ export function Sidebar({
         </div>
         <NavLinks activePath={activePath} collapsed />
         <div className="p-2">
-          <Button
-            size="icon"
-            variant="ghost"
-            className="w-full text-sidebar-muted hover:bg-white/5 hover:text-white"
-            onClick={toggleTheme}
-            aria-label="Toggle color theme"
-          >
-            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </Button>
+          <ThemeToggle compact />
         </div>
       </aside>
     );
@@ -119,15 +109,7 @@ export function Sidebar({
       </div>
       <NavLinks activePath={activePath} onNavigate={onNavigate} />
       <div className="border-t border-white/10 p-3">
-        <Button
-          variant="ghost"
-          className="w-full justify-start text-sidebar-muted hover:bg-white/5 hover:text-white"
-          onClick={toggleTheme}
-          aria-label="Toggle color theme"
-        >
-          {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          {theme === "dark" ? "Light mode" : "Dark mode"}
-        </Button>
+        <ThemeToggle />
       </div>
     </aside>
   );
