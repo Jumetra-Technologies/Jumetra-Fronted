@@ -1,15 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Moon,
   PanelLeftClose,
   PanelLeftOpen,
   PanelRightClose,
   PanelRightOpen,
-  Sun,
 } from "lucide-react";
 import { api, getWorkspaceWsUrl } from "@/lib/api-client";
 import { WorkspaceCanvas } from "@/components/workspace/Canvas/WorkspaceCanvas";
@@ -31,10 +28,8 @@ import { ConnectionInspector } from "@/components/workspace/ConnectionInspector"
 import { SignalTraceOverlay } from "@/components/workspace/SignalTraceOverlay";
 import type { WorkspaceConnection } from "@/components/workspace/ConnectionManager";
 import { Button } from "@/components/ui/button";
-import { useTheme } from "@/components/theme/theme-provider";
 import { useWorkspaceStore } from "@/stores/workspace-store";
 import { useUIStore } from "@/stores/ui-store";
-import { WORKSPACE_NAV_ITEMS } from "@/components/layout/nav-items";
 import type { WorkspaceHardwareNode } from "@/components/workspace/hardware-types";
 import {
   applyWorkspaceSnapshot,
@@ -56,7 +51,6 @@ export function EngineeringWorkspaceShell() {
   const [hardwareInspector, setHardwareInspector] = useState<Record<string, unknown> | null>(null);
   const [selectedConnection, setSelectedConnection] = useState<WorkspaceConnection | null>(null);
   const [tracePath, setTracePath] = useState<string[]>([]);
-  const { theme, toggleTheme } = useTheme();
   const upsertNode = useWorkspaceStore((s) => s.upsertNode);
   const leftOpen = useUIStore((s) => s.leftOpen);
   const rightOpen = useUIStore((s) => s.rightOpen);
@@ -140,14 +134,14 @@ export function EngineeringWorkspaceShell() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background text-sm text-muted">
+      <div className="flex h-full items-center justify-center bg-background text-sm text-muted">
         Loading engineering workspace…
       </div>
     );
   }
   if (error || !workspaceId) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-2 bg-background text-sm">
+      <div className="flex h-full flex-col items-center justify-center gap-2 bg-background text-sm">
         <p className="text-danger">{error || "Workspace unavailable"}</p>
         <p className="text-muted">Ensure the API is running on port 8000.</p>
         <Button
@@ -166,38 +160,11 @@ export function EngineeringWorkspaceShell() {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-background text-foreground">
-      <header className="flex items-center gap-4 border-b border-border bg-surface px-4 py-2.5 shadow-[var(--shadow-sm)]">
-        <div className="flex items-baseline gap-2">
-          <Link
-            href="/"
-            className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted"
-          >
-            HHIP
-          </Link>
-          <span className="text-sm font-semibold tracking-tight">Engineering Workspace</span>
-        </div>
-        <nav className="hidden items-center gap-1 md:flex" aria-label="Workspace">
-          {WORKSPACE_NAV_ITEMS.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "rounded-[10px] px-2.5 py-1.5 text-xs font-medium transition-colors",
-                item.href === "/laboratory/workspace"
-                  ? "bg-accent text-primary"
-                  : "text-muted hover:bg-muted-bg hover:text-foreground",
-              )}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+    <div className="flex h-full min-h-0 flex-col bg-background text-foreground">
+      <header className="flex shrink-0 items-center gap-4 border-b border-border bg-surface px-4 py-2.5 shadow-[var(--shadow-sm)]">
+        <span className="text-sm font-semibold tracking-tight">Engineering Workspace</span>
         <div className="ml-auto flex items-center gap-2">
           <span className="hidden font-mono text-[11px] text-muted sm:inline">{workspaceId}</span>
-          <Button size="icon" variant="ghost" onClick={toggleTheme} aria-label="Toggle theme">
-            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </Button>
           <Button
             size="icon"
             variant="ghost"

@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { api, getFirmwareWsUrl } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -168,20 +167,9 @@ export function FirmwareStudio() {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-background text-foreground">
-      <header className="flex items-center gap-3 border-b border-border bg-surface px-3 py-2">
-        <Link href="/" className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
-          HHIP
-        </Link>
+    <div className="flex h-full min-h-0 flex-col bg-background text-foreground">
+      <header className="flex shrink-0 items-center gap-3 border-b border-border bg-surface px-3 py-2">
         <span className="text-sm font-semibold">Embedded Studio</span>
-        <nav className="hidden gap-1 md:flex">
-          <Link href="/laboratory/workspace" className="rounded px-2 py-1 text-xs text-muted hover:bg-muted-bg">
-            Workspace
-          </Link>
-          <Link href="/firmware" className="rounded bg-accent px-2 py-1 text-xs text-primary">
-            Firmware
-          </Link>
-        </nav>
         <div className="ml-auto flex flex-wrap items-center gap-1">
           <Button size="sm" className="h-7 text-[11px]" disabled={!project} onClick={() => void compile()}>
             Compile

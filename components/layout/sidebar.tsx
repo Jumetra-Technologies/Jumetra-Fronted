@@ -109,16 +109,23 @@ export function Sidebar({
 export function DashboardShell({
   activePath,
   children,
+  fullBleed = false,
 }: {
   activePath: string;
   children: React.ReactNode;
+  fullBleed?: boolean;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-surface px-4 shadow-[var(--shadow-sm)]">
+    <div
+      className={cn(
+        "flex flex-col bg-background",
+        fullBleed ? "h-screen overflow-hidden" : "min-h-screen",
+      )}
+    >
+      <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-surface px-4 shadow-[var(--shadow-sm)]">
         <Button
           size="icon"
           variant="ghost"
@@ -144,14 +151,16 @@ export function DashboardShell({
           <span className="hidden text-sm font-semibold sm:inline">Engineering Platform</span>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <Link href="/laboratory/workspace">
-            <Button size="sm">Open Laboratory</Button>
-          </Link>
+          {!fullBleed ? (
+            <Link href="/laboratory/workspace">
+              <Button size="sm">Open Laboratory</Button>
+            </Link>
+          ) : null}
         </div>
       </header>
 
       <div className="flex min-h-0 flex-1">
-        <div className="hidden lg:block">
+        <div className="hidden h-full shrink-0 lg:block">
           <Sidebar activePath={activePath} collapsed={collapsed} />
         </div>
 
@@ -180,8 +189,17 @@ export function DashboardShell({
           </div>
         ) : null}
 
-        <main className="flex-1 overflow-auto bg-background">
-          <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">{children}</div>
+        <main
+          className={cn(
+            "min-w-0 flex-1 bg-background",
+            fullBleed ? "flex min-h-0 flex-col overflow-hidden" : "overflow-auto",
+          )}
+        >
+          {fullBleed ? (
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col">{children}</div>
+          ) : (
+            <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">{children}</div>
+          )}
         </main>
       </div>
     </div>
