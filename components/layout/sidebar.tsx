@@ -142,7 +142,6 @@ export function DashboardShell({
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const { theme, toggleTheme } = useTheme();
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -175,9 +174,6 @@ export function DashboardShell({
           <Link href="/laboratory/workspace">
             <Button size="sm">Open Laboratory</Button>
           </Link>
-          <Button size="icon" variant="ghost" onClick={toggleTheme} aria-label="Toggle theme">
-            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </Button>
         </div>
       </header>
 
