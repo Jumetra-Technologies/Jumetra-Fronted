@@ -89,7 +89,7 @@ export function Sidebar({
     return (
       <aside className="hidden h-full w-16 shrink-0 flex-col bg-sidebar text-sidebar-foreground lg:flex">
         <NavLinks activePath={activePath} collapsed />
-        <div className="mt-auto border-t border-white/10 p-2">
+        <div className="mt-auto p-2">
           <ThemeToggle compact />
         </div>
       </aside>
@@ -99,7 +99,7 @@ export function Sidebar({
   return (
     <aside className="flex h-full w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground">
       <NavLinks activePath={activePath} onNavigate={onNavigate} />
-      <div className="mt-auto border-t border-white/10 p-3">
+      <div className="mt-auto p-3">
         <ThemeToggle />
       </div>
     </aside>

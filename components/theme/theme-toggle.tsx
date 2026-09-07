@@ -20,7 +20,7 @@ export function ThemeToggle({ className, compact = false }: ThemeToggleProps) {
       role="group"
       aria-label="Color theme"
       className={cn(
-        "relative grid grid-cols-2 rounded-[10px] border border-white/10 bg-white/5 p-1",
+        "relative grid grid-cols-2 rounded-[10px] bg-white/5 p-1",
         compact ? "w-full" : "w-full",
         className,
       )}
