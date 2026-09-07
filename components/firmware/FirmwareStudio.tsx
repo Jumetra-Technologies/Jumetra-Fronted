@@ -51,6 +51,8 @@ export function FirmwareStudio() {
   const [rightTab, setRightTab] = useState<"build" | "serial" | "tools" | "memory">("build");
   const [gpio, setGpio] = useState<Array<Record<string, unknown>>>([]);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState("");
 
   const tree = useMemo(() => project?.tree || {}, [project]);
 
@@ -60,20 +62,41 @@ export function FirmwareStudio() {
   }, []);
 
   const openProject = useCallback(async (id: string) => {
-    const p = (await api.getFirmwareProject(id)) as Project;
-    setProject(p);
-    const first = p.files?.[0];
-    if (first) {
-      setActivePath(first.path);
-      setContent(first.content);
-      setDirty(false);
+    try {
+      const p = (await api.getFirmwareProject(id)) as Project;
+      setProject(p);
+      setError("");
+      const first = p.files?.[0];
+      if (first) {
+        setActivePath(first.path);
+        setContent(first.content);
+        setDirty(false);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to open project");
+    }
+  }, []);
+
+  const bootStudio = useCallback(async () => {
+    setLoading(true);
+    setApiError("");
+    try {
+      const [projectsRes, templatesRes] = await Promise.all([
+        api.listFirmwareProjects(),
+        api.listFirmwareTemplates(),
+      ]);
+      setProjects((projectsRes.projects as Project[]) || []);
+      setTemplates((templatesRes.templates as Array<{ id: string; name: string }>) || []);
+    } catch (err) {
+      setApiError(err instanceof Error ? err.message : "Cannot reach HHIP API");
+    } finally {
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    void refreshProjects();
-    void api.listFirmwareTemplates().then((r) => setTemplates((r.templates as Array<{ id: string; name: string }>) || []));
-  }, [refreshProjects]);
+    void bootStudio();
+  }, [bootStudio]);
 
   useEffect(() => {
     let ws: WebSocket | null = null;
@@ -127,35 +150,52 @@ export function FirmwareStudio() {
 
   async function saveFile() {
     if (!project || !activePath) return;
-    const updated = (await api.saveFirmwareFile(project.project_id, {
-      path: activePath,
-      content,
-    })) as Project;
-    setProject({ ...updated, tree: project.tree });
-    setDirty(false);
-    const full = await api.getFirmwareProject(project.project_id);
-    setProject(full as Project);
+    try {
+      const updated = (await api.saveFirmwareFile(project.project_id, {
+        path: activePath,
+        content,
+      })) as Project;
+      setProject({ ...updated, tree: project.tree });
+      setDirty(false);
+      const full = await api.getFirmwareProject(project.project_id);
+      setProject(full as Project);
+      setError("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Save failed");
+    }
   }
 
   async function compile() {
     if (!project) return;
-    if (dirty) await saveFile();
-    setRightTab("build");
-    const res = (await api.buildFirmware({ project_id: project.project_id, use_cache: false })) as BuildInfo;
-    setBuild(res);
+    try {
+      if (dirty) await saveFile();
+      setRightTab("build");
+      const res = (await api.buildFirmware({ project_id: project.project_id, use_cache: false })) as BuildInfo;
+      setBuild(res);
+      setError("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Compile failed");
+    }
   }
 
   async function upload() {
     if (!project) return;
-    setUploadPct(0);
-    setUploadDone(false);
-    setUploadMsg("Starting…");
-    const res = await api.uploadFirmware({ project_id: project.project_id, port });
-    setUploadPct(100);
-    setUploadDone(Boolean(res.success));
-    setUploadMsg(res.success ? "Verified · board reset · reconnect" : "Upload failed");
-    const serial = await api.getFirmwareSerial({ limit: 20 });
-    setGpio((serial.gpio as Array<Record<string, unknown>>) || []);
+    try {
+      setUploadPct(0);
+      setUploadDone(false);
+      setUploadMsg("Starting…");
+      const res = await api.uploadFirmware({ project_id: project.project_id, port });
+      setUploadPct(100);
+      setUploadDone(Boolean(res.success));
+      setUploadMsg(res.success ? "Verified · board reset · reconnect" : "Upload failed");
+      const serial = await api.getFirmwareSerial({ limit: 20 });
+      setGpio((serial.gpio as Array<Record<string, unknown>>) || []);
+      setError("");
+    } catch (err) {
+      setUploadDone(true);
+      setUploadMsg("Upload failed");
+      setError(err instanceof Error ? err.message : "Upload failed");
+    }
   }
 
   function openFile(path: string) {
@@ -164,6 +204,26 @@ export function FirmwareStudio() {
     setActivePath(path);
     setContent(f.content);
     setDirty(false);
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center bg-background text-sm text-muted">
+        Loading Embedded Studio…
+      </div>
+    );
+  }
+
+  if (apiError) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-2 bg-background px-4 text-center text-sm">
+        <p className="max-w-md text-danger">{apiError}</p>
+        <p className="text-muted">Ensure the HHIP API is running on port 8000, then retry.</p>
+        <Button size="sm" onClick={() => void bootStudio()}>
+          Retry connection
+        </Button>
+      </div>
+    );
   }
 
   return (
