@@ -7,7 +7,6 @@ import {
   FlaskConical,
   Home,
   LayoutDashboard,
-  Settings,
   ShoppingBag,
   Workflow,
   type LucideIcon,
@@ -20,20 +19,46 @@ export type NavItem = {
   primary?: boolean;
 };
 
-/** Canonical app navigation — shared by sidebar and workspace chrome. */
-export const NAV_ITEMS: NavItem[] = [
-  { href: "/", label: "Home", icon: Home },
-  { href: "/workspace", label: "Projects", icon: Boxes },
-  { href: "/laboratory/workspace", label: "Laboratory", icon: Beaker, primary: true },
-  { href: "/firmware", label: "Firmware", icon: Cpu },
-  { href: "/experiments", label: "Experiments", icon: FlaskConical },
-  { href: "/marketplace", label: "Marketplace", icon: ShoppingBag },
-  { href: "/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/reports", label: "Reports", icon: FileText },
-  { href: "/settings", label: "Settings", icon: Settings },
-  { href: "/dashboard", label: "Research Overview", icon: LayoutDashboard },
-  { href: "/hybrid", label: "Hybrid Bridge", icon: Workflow },
+export type NavSection = {
+  id: string;
+  label: string;
+  items: NavItem[];
+};
+
+/** Grouped primary navigation for the app shell sidebar. */
+export const NAV_SECTIONS: NavSection[] = [
+  {
+    id: "workspace",
+    label: "Workspace",
+    items: [
+      { href: "/", label: "Home", icon: Home },
+      { href: "/workspace", label: "Projects", icon: Boxes },
+      { href: "/laboratory/workspace", label: "Laboratory", icon: Beaker, primary: true },
+      { href: "/firmware", label: "Firmware", icon: Cpu },
+    ],
+  },
+  {
+    id: "research",
+    label: "Research",
+    items: [
+      { href: "/experiments", label: "Experiments", icon: FlaskConical },
+      { href: "/analytics", label: "Analytics", icon: BarChart3 },
+      { href: "/reports", label: "Reports", icon: FileText },
+      { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+    ],
+  },
+  {
+    id: "connect",
+    label: "Connect",
+    items: [
+      { href: "/marketplace", label: "Marketplace", icon: ShoppingBag },
+      { href: "/hybrid", label: "Hybrid Bridge", icon: Workflow },
+    ],
+  },
 ];
+
+/** Flat list kept for callers that need a single array. */
+export const NAV_ITEMS: NavItem[] = NAV_SECTIONS.flatMap((section) => section.items);
 
 /** Compact header links for the engineering workspace. */
 export const WORKSPACE_NAV_ITEMS = NAV_ITEMS.filter((item) =>
@@ -45,6 +70,10 @@ export const WORKSPACE_NAV_ITEMS = NAV_ITEMS.filter((item) =>
     "/experiments",
     "/marketplace",
     "/analytics",
-    "/settings",
   ].includes(item.href),
 );
+
+export function isNavItemActive(activePath: string, href: string): boolean {
+  if (href === "/") return activePath === "/";
+  return activePath === href || activePath.startsWith(`${href}/`);
+}

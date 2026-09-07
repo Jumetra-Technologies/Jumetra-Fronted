@@ -21,13 +21,19 @@ export const metadata: Metadata = {
     "Hybrid Hardware Integration Platform — professional engineering workspace for physical, virtual, and simulated hardware",
 };
 
+const themeBootScript = `(function(){try{var k='hhip-theme';var t=localStorage.getItem(k);var ok=['light','dark','light-contrast','dark-contrast','blue','red','green'];if(ok.indexOf(t)<0)t='light';document.documentElement.dataset.theme=t;var dark=['dark','dark-contrast'];if(dark.indexOf(t)>=0)document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.dataset.theme='light';}})();`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
       suppressHydrationWarning
+      data-theme="light"
       className={`${inter.variable} ${jetbrains.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
+      </head>
       <body className="min-h-full bg-background font-sans text-foreground">
         <ThemeProvider>{children}</ThemeProvider>
       </body>

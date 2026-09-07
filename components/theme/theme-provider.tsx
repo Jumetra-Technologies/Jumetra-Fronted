@@ -8,8 +8,12 @@ import {
   useMemo,
   useState,
 } from "react";
-
-type Theme = "light" | "dark";
+import {
+  DEFAULT_THEME,
+  DARK_SURFACE_THEMES,
+  isTheme,
+  type Theme,
+} from "@/components/theme/theme-options";
 
 type ThemeContextValue = {
   theme: Theme;
@@ -18,31 +22,27 @@ type ThemeContextValue = {
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
+const STORAGE_KEY = "hhip-theme";
 
-function applyTheme(theme: Theme) {
+export function applyTheme(theme: Theme) {
   const root = document.documentElement;
-  root.classList.toggle("dark", theme === "dark");
   root.dataset.theme = theme;
+  root.classList.toggle("dark", DARK_SURFACE_THEMES.has(theme));
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("light");
+  const [theme, setThemeState] = useState<Theme>(DEFAULT_THEME);
 
   useEffect(() => {
-    const stored = window.localStorage.getItem("hhip-theme") as Theme | null;
-    const initial =
-      stored === "dark" || stored === "light"
-        ? stored
-        : window.matchMedia("(prefers-color-scheme: dark)").matches
-          ? "dark"
-          : "light";
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    const initial = isTheme(stored) ? stored : DEFAULT_THEME;
     setThemeState(initial);
     applyTheme(initial);
   }, []);
 
   const setTheme = useCallback((next: Theme) => {
     setThemeState(next);
-    window.localStorage.setItem("hhip-theme", next);
+    window.localStorage.setItem(STORAGE_KEY, next);
     applyTheme(next);
   }, []);
 
@@ -62,7 +62,7 @@ export function useTheme() {
   const ctx = useContext(ThemeContext);
   if (!ctx) {
     return {
-      theme: "light" as Theme,
+      theme: DEFAULT_THEME,
       setTheme: (_: Theme) => undefined,
       toggleTheme: () => undefined,
     };
