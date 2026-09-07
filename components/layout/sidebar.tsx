@@ -21,8 +21,8 @@ function NavLinks({
   return (
     <nav
       className={cn(
-        "flex flex-1 flex-col gap-1",
-        collapsed ? "items-center p-2" : "p-3",
+        "flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto",
+        collapsed ? "items-center px-2 py-3" : "px-3 py-3",
       )}
       aria-label="Primary"
     >
@@ -39,7 +39,7 @@ function NavLinks({
               href={item.href}
               title={item.label}
               className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-[10px] transition-colors",
+                "flex h-9 w-9 items-center justify-center rounded-[10px] transition-colors",
                 active
                   ? "bg-primary text-primary-foreground"
                   : "text-sidebar-muted hover:bg-white/5 hover:text-white",
@@ -56,7 +56,7 @@ function NavLinks({
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              "flex items-center gap-3 rounded-[10px] px-3 py-2.5 text-sm font-medium transition-colors",
+              "flex items-center gap-3 rounded-[10px] px-3 py-2 text-sm font-medium transition-colors",
               active
                 ? "bg-primary text-primary-foreground shadow-[var(--shadow-sm)]"
                 : item.primary
@@ -87,12 +87,9 @@ export function Sidebar({
 }) {
   if (collapsed) {
     return (
-      <aside className="hidden w-16 shrink-0 flex-col bg-sidebar text-sidebar-foreground lg:flex">
-        <div className="flex items-center justify-center border-b border-white/10 py-4">
-          <span className="text-xs font-bold tracking-widest text-white">H</span>
-        </div>
+      <aside className="hidden h-full w-16 shrink-0 flex-col bg-sidebar text-sidebar-foreground lg:flex">
         <NavLinks activePath={activePath} collapsed />
-        <div className="p-2">
+        <div className="mt-auto border-t border-white/10 p-2">
           <ThemeToggle compact />
         </div>
       </aside>
@@ -101,14 +98,8 @@ export function Sidebar({
 
   return (
     <aside className="flex h-full w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground">
-      <div className="border-b border-white/10 px-5 py-5">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-sidebar-muted">
-          HHIP
-        </p>
-        <h1 className="mt-1 text-lg font-semibold tracking-tight">Engineering Platform</h1>
-      </div>
       <NavLinks activePath={activePath} onNavigate={onNavigate} />
-      <div className="border-t border-white/10 p-3">
+      <div className="mt-auto border-t border-white/10 p-3">
         <ThemeToggle />
       </div>
     </aside>
