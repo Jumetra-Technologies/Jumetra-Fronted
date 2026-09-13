@@ -27,7 +27,11 @@ import type {
 import type { WorkspaceNode, WorkspaceState } from "./workspace-types";
 import { coerceWorkspaceState } from "./workspace-snapshot";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
+const DEFAULT_API_BASE =
+  process.env.NODE_ENV === "production"
+    ? "https://jumetra-backend-1.onrender.com"
+    : "http://127.0.0.1:8000";
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? DEFAULT_API_BASE).replace(/\/+$/, "");
 
 function buildQuery(params: Record<string, string | number | undefined | null>): string {
   const qs = new URLSearchParams();
@@ -55,7 +59,7 @@ async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
   } catch (err) {
     const hint =
       typeof window !== "undefined"
-        ? `Cannot reach HHIP API at ${API_BASE}. Start it with: python hhip/run_api.py`
+        ? `Cannot reach the Jumetra API at ${API_BASE}. Check that the backend is running and that NEXT_PUBLIC_API_URL is correct.`
         : "";
     const message = err instanceof Error ? err.message : "Network error";
     throw new Error(hint ? `${message}. ${hint}` : message);

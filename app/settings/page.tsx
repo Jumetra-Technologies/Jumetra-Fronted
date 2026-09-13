@@ -2,6 +2,7 @@ import { Palette } from "lucide-react";
 import { DashboardShell } from "@/components/layout/sidebar";
 import { Card } from "@/components/ui/card";
 import { ThemeSettings } from "@/components/theme/theme-settings";
+import { API_BASE } from "@/lib/api-client";
 
 export default function SettingsPage() {
   return (
@@ -29,7 +30,7 @@ export default function SettingsPage() {
             <div>
               <dt className="text-muted">API URL</dt>
               <dd className="mt-0.5 font-mono text-foreground">
-                {process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000"}
+                {API_BASE}
               </dd>
             </div>
             <div>

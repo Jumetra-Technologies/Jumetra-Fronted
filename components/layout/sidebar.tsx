@@ -223,6 +223,25 @@ export function Sidebar({
       )}
       style={{ borderColor: "var(--sidebar-border)" }}
     >
+      <div
+        className={cn(
+          "flex shrink-0 items-center border-b",
+          collapsed ? "justify-center px-2 py-4" : "gap-3 px-4 py-4",
+        )}
+        style={{ borderColor: "var(--sidebar-border)" }}
+      >
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-sm font-bold text-primary-foreground shadow-[var(--shadow-sm)]">
+          H
+        </span>
+        {!collapsed ? (
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold tracking-tight text-sidebar-foreground">HHIP</p>
+            <p className="truncate text-[10px] font-medium uppercase tracking-[0.12em] text-sidebar-muted">
+              Engineering Platform
+            </p>
+          </div>
+        ) : null}
+      </div>
       <NavLinks activePath={activePath} collapsed={collapsed} onNavigate={onNavigate} />
       <div
         className={cn("mt-auto shrink-0 border-t", collapsed ? "p-2" : "p-3")}
@@ -268,7 +287,7 @@ export function DashboardShell({
   return (
     <div className="flex h-svh flex-col overflow-hidden bg-background">
       <header
-        className="flex h-14 shrink-0 items-center gap-3 border-b bg-header px-4 text-header-foreground shadow-[var(--shadow-sm)]"
+        className="flex h-16 shrink-0 items-center gap-3 border-b bg-header px-4 text-header-foreground shadow-[var(--shadow-sm)] sm:px-6"
         style={{ borderColor: "var(--sidebar-border)" }}
       >
         <Button
@@ -290,7 +309,7 @@ export function DashboardShell({
           {collapsed ? <PanelLeftOpen className="size-5" /> : <PanelLeftClose className="size-5" />}
         </Button>
         <div className="flex min-w-0 items-baseline gap-2">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-header-foreground/55">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
             HHIP
           </span>
           <span className="hidden truncate text-sm font-semibold text-header-foreground sm:inline">
